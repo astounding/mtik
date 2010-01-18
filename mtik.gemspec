@@ -15,5 +15,5 @@ Gem::Specification.new do |spec|
                             'examples/tikfetch.rb', 'examples/tikjson.rb',
                             'lib/mtik.rb', 'lib/mtik/request.rb', 'lib/mtik/reply.rb',
                             'lib/mtik/connection.rb', 'lib/mtik/error.rb',
-                            'lib/mtik/timeouterror.rb', 'lib/mtik/fatalerror.rb' ]
+                            'lib/mtik/timeouterror.rb', 'lib/mtik/fatalerror.rb', 'mtik.rb' ]
 end
