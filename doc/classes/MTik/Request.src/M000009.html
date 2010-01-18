@@ -1,0 +1,38 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>new (MTik::Request)</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link rel="stylesheet" href="../../.././rdoc-style.css" type="text/css" media="screen" />
+</head>
+<body class="standalone-code">
+  <pre><span class="ruby-comment cmt"># File lib/mtik/request.rb, line 65</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">await_completion</span>, <span class="ruby-identifier">command</span>, <span class="ruby-operator">*</span><span class="ruby-identifier">args</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">callback</span>)
+    <span class="ruby-ivar">@reply</span>            = <span class="ruby-constant">MTik</span><span class="ruby-operator">::</span><span class="ruby-constant">Reply</span>.<span class="ruby-identifier">new</span>
+    <span class="ruby-ivar">@command</span>          = <span class="ruby-identifier">command</span>
+    <span class="ruby-ivar">@await_completion</span> = <span class="ruby-identifier">await_completion</span>
+    <span class="ruby-ivar">@complete</span>         = <span class="ruby-keyword kw">false</span>
+
+    <span class="ruby-identifier">args</span>.<span class="ruby-identifier">flatten!</span>
+    <span class="ruby-ivar">@callbacks</span> = <span class="ruby-constant">Array</span>.<span class="ruby-identifier">new</span>
+    <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">block_given?</span>
+      <span class="ruby-ivar">@callbacks</span>.<span class="ruby-identifier">push</span>(<span class="ruby-identifier">callback</span>)
+    <span class="ruby-keyword kw">elsif</span> <span class="ruby-identifier">args</span>.<span class="ruby-identifier">length</span> <span class="ruby-operator">&gt;</span> <span class="ruby-value">0</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">args</span>[<span class="ruby-identifier">args</span>.<span class="ruby-identifier">length</span><span class="ruby-operator">-</span><span class="ruby-value">1</span>].<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Proc</span>)
+      <span class="ruby-ivar">@callbacks</span>.<span class="ruby-identifier">push</span>(<span class="ruby-identifier">args</span>.<span class="ruby-identifier">pop</span>)
+    <span class="ruby-keyword kw">end</span>
+
+    <span class="ruby-keyword kw">super</span>(<span class="ruby-operator">&amp;</span><span class="ruby-keyword kw">nil</span>)
+    <span class="ruby-comment cmt">## Add command to the request sentence list:</span>
+    <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">push</span>(<span class="ruby-identifier">command</span>)
+
+    <span class="ruby-comment cmt">## Add all arguments to the request sentence list:</span>
+    <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">addargs</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">args</span>)
+
+    <span class="ruby-comment cmt">## Append a unique tag for the request:</span>
+    <span class="ruby-ivar">@tag</span> = <span class="ruby-ivar">@@tagspace</span>.<span class="ruby-identifier">to_s</span>
+    <span class="ruby-ivar">@@tagspace</span> <span class="ruby-operator">+=</span> <span class="ruby-value">1</span>
+    <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">push</span>(<span class="ruby-node">&quot;.tag=#{@tag}&quot;</span>)
+  <span class="ruby-keyword kw">end</span></pre>
+</body>
+</html>

@@ -1,0 +1,428 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>Module: MTik [RDoc Documentation]</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Script-Type" content="text/javascript" />
+  <link rel="stylesheet" href=".././rdoc-style.css" type="text/css" media="screen" />
+  <script type="text/javascript">
+  // <![CDATA[
+
+  function popupCode( url ) {
+    window.open(url, "Code", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=150,width=400")
+  }
+
+  function toggleCode( id ) {
+    if ( document.getElementById )
+      elem = document.getElementById( id );
+    else if ( document.all )
+      elem = eval( "document.all." + id );
+    else
+      return false;
+
+    elemStyle = elem.style;
+
+    if ( elemStyle.display != "block" ) {
+      elemStyle.display = "block"
+    } else {
+      elemStyle.display = "none"
+    }
+
+    return true;
+  }
+
+  // Make codeblocks hidden by default
+  document.writeln( "<style type=\"text/css\">div.method-source-code { display: none }<\/style>" )
+
+  // ]]>
+  </script>
+
+</head>
+<body>
+
+
+    <div id="classHeader">
+        <table class="header-table">
+        <tr class="top-aligned-row">
+          <td><strong>Module</strong></td>
+          <td class="class-name-in-header">MTik</td>
+        </tr>
+        <tr class="top-aligned-row">
+            <td><strong>In:</strong></td>
+            <td>
+
+
+                <a href="../files/lib/mtik_rb.html">
+
+                lib/mtik.rb
+
+                </a>
+
+
+        <br />
+
+            </td>
+        </tr>
+
+
+        </table>
+    </div>
+  <!-- banner header -->
+
+  <div id="bodyContent">
+
+  <div id="contextContent">
+
+    <div id="description">
+      <p>
+A Ruby library implementing the Ruby MikroTik API
+</p>
+<table>
+<tr><td valign="top">Author:</td><td>Aaron D. Gifford - <a
+href="http://www.aarongifford.com/">www.aarongifford.com/</a>
+
+</td></tr>
+<tr><td valign="top">Copyright:</td><td>Copyright &#169; 2009-2010, InfoWest, Inc.
+
+</td></tr>
+<tr><td valign="top">License:</td><td>BSD license
+
+</td></tr>
+</table>
+<p>
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+</p>
+<ol>
+<li>Redistributions of source code must retain the above copyright notice, the
+above list of authors and contributors, this list of conditions and the
+following disclaimer.
+
+</li>
+<li>Redistributions in binary form must reproduce the above copyright notice,
+this list of conditions and the following disclaimer in the documentation
+and/or other materials provided with the distribution.
+
+</li>
+<li>Neither the name of the author(s) or copyright holder(s) nor the names of
+any contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.
+
+</li>
+</ol>
+<p>
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER(S), AUTHOR(S) AND
+CONTRIBUTORS ``AS IS&#8217;&#8217; AND ANY EXPRESS OR IMPLIED WARRANTIES,
+INCLUDING, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+EVENT SHALL IN NO EVENT SHALL THE COPYRIGHT HOLDER(S), AUTHOR(S), OR
+CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+EXEMPLARY, OR DCONSEQUENTIAL AMAGES (INCLUDING, BUT NOT LIMITED TO,
+PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+</p>
+
+    </div>
+
+   </div>
+
+
+    <div id="method-list">
+      <h3 class="section-bar">Methods</h3>
+
+      <div class="name-list">
+
+        <a href="#M000008">command</a>&nbsp;&nbsp;
+
+        <a href="#M000005">debug</a>&nbsp;&nbsp;
+
+        <a href="#M000006">debug=</a>&nbsp;&nbsp;
+
+        <a href="#M000007">interactive_client</a>&nbsp;&nbsp;
+
+        <a href="#M000003">verbose</a>&nbsp;&nbsp;
+
+        <a href="#M000004">verbose=</a>&nbsp;&nbsp;
+
+      </div>
+    </div>
+
+  </div>
+
+    <!-- if includes -->
+
+    <div id="section">
+
+    <div id="class-list">
+      <h3 class="section-bar">Classes and Modules</h3>
+
+      Class <a href="MTik/Connection.html" class="link">MTik::Connection</a><br />
+Class <a href="MTik/Error.html" class="link">MTik::Error</a><br />
+Class <a href="MTik/FatalError.html" class="link">MTik::FatalError</a><br />
+Class <a href="MTik/Reply.html" class="link">MTik::Reply</a><br />
+Class <a href="MTik/Request.html" class="link">MTik::Request</a><br />
+Class <a href="MTik/TimeoutError.html" class="link">MTik::TimeoutError</a><br />
+
+    </div>
+
+    <div id="constants-list">
+      <h3 class="section-bar">Constants</h3>
+
+      <div class="name-list">
+        <table summary="Constants">
+
+        <tr class="top-aligned-row context-row">
+          <td class="context-item-name">PORT</td>
+          <td>=</td>
+          <td class="context-item-value">8728</td>
+
+          <td>&nbsp;</td>
+          <td class="context-item-desc">
+Default MikroTik RouterOS API TCP port:
+
+</td>
+
+        </tr>
+
+        <tr class="top-aligned-row context-row">
+          <td class="context-item-name">USER</td>
+          <td>=</td>
+          <td class="context-item-value">'admin'</td>
+
+          <td>&nbsp;</td>
+          <td class="context-item-desc">
+Default username to use if none is specified:
+
+</td>
+
+        </tr>
+
+        <tr class="top-aligned-row context-row">
+          <td class="context-item-name">PASS</td>
+          <td>=</td>
+          <td class="context-item-value">''</td>
+
+          <td>&nbsp;</td>
+          <td class="context-item-desc">
+Default password to use if none is specified:
+
+</td>
+
+        </tr>
+
+        <tr class="top-aligned-row context-row">
+          <td class="context-item-name">CONN_TIMEOUT</td>
+          <td>=</td>
+          <td class="context-item-value">60</td>
+
+          <td>&nbsp;</td>
+          <td class="context-item-desc">
+<a href="MTik/Connection.html">Connection</a> timeout default &#8212; *NOT
+USED*
+
+</td>
+
+        </tr>
+
+        <tr class="top-aligned-row context-row">
+          <td class="context-item-name">CMD_TIMEOUT</td>
+          <td>=</td>
+          <td class="context-item-value">60</td>
+
+          <td>&nbsp;</td>
+          <td class="context-item-desc">
+Command timeout &#8212; The maximum number of seconds to wait for more API
+data when expecting one or more command responses.
+
+</td>
+
+        </tr>
+
+        </table>
+      </div>
+    </div>
+
+
+
+
+    <!-- if method_list -->
+
+    <div id="methods">
+
+      <h3 class="section-bar">Public Class methods</h3>
+
+
+      <div id="method-M000008" class="method-detail">
+        <a name="M000008"></a>
+
+        <div class="method-heading">
+
+          <a href="MTik.src/M000008.html" target="Code" class="method-signature"
+            onclick="popupCode('MTik.src/M000008.html');return false;">
+
+          <span class="method-name">command</span><span class="method-args">(args)</span>
+
+          </a>
+
+        </div>
+
+        <div class="method-description">
+
+          <p>
+An all-in-one function to instantiate, connect, send one or more commands,
+retrieve the response(s), close the connection, and return the response(s).
+</p>
+<table>
+<tr><td valign="top"><b>WARNING</b> :</td><td>If you use this call with an API command like
+
+</td></tr>
+</table>
+<p>
+<tt>/tool/fetch</tt> it will forever keep reading replies, never returning.
+So do <em>NOT</em> use this with any API command that does not complete
+with a &#8220;!done&#8221; with no additional interaction.
+</p>
+
+        </div>
+      </div>
+
+
+      <div id="method-M000005" class="method-detail">
+        <a name="M000005"></a>
+
+        <div class="method-heading">
+
+          <a href="MTik.src/M000005.html" target="Code" class="method-signature"
+            onclick="popupCode('MTik.src/M000005.html');return false;">
+
+          <span class="method-name">debug</span><span class="method-args">()</span>
+
+          </a>
+
+        </div>
+
+        <div class="method-description">
+
+          <p>
+Access the current debug setting (boolean)
+</p>
+
+        </div>
+      </div>
+
+
+      <div id="method-M000006" class="method-detail">
+        <a name="M000006"></a>
+
+        <div class="method-heading">
+
+          <a href="MTik.src/M000006.html" target="Code" class="method-signature"
+            onclick="popupCode('MTik.src/M000006.html');return false;">
+
+          <span class="method-name">debug=</span><span class="method-args">(x)</span>
+
+          </a>
+
+        </div>
+
+        <div class="method-description">
+
+          <p>
+Change the current debug setting (boolean)
+</p>
+
+        </div>
+      </div>
+
+
+      <div id="method-M000007" class="method-detail">
+        <a name="M000007"></a>
+
+        <div class="method-heading">
+
+          <a href="MTik.src/M000007.html" target="Code" class="method-signature"
+            onclick="popupCode('MTik.src/M000007.html');return false;">
+
+          <span class="method-name">interactive_client</span><span class="method-args">(host, user, pass)</span>
+
+          </a>
+
+        </div>
+
+        <div class="method-description">
+
+          <p>
+Act as an interactive client with the device, accepting user input from
+STDIN.
+</p>
+
+        </div>
+      </div>
+
+
+      <div id="method-M000003" class="method-detail">
+        <a name="M000003"></a>
+
+        <div class="method-heading">
+
+          <a href="MTik.src/M000003.html" target="Code" class="method-signature"
+            onclick="popupCode('MTik.src/M000003.html');return false;">
+
+          <span class="method-name">verbose</span><span class="method-args">()</span>
+
+          </a>
+
+        </div>
+
+        <div class="method-description">
+
+          <p>
+Access the current verbose setting (boolean)
+</p>
+
+        </div>
+      </div>
+
+
+      <div id="method-M000004" class="method-detail">
+        <a name="M000004"></a>
+
+        <div class="method-heading">
+
+          <a href="MTik.src/M000004.html" target="Code" class="method-signature"
+            onclick="popupCode('MTik.src/M000004.html');return false;">
+
+          <span class="method-name">verbose=</span><span class="method-args">(x)</span>
+
+          </a>
+
+        </div>
+
+        <div class="method-description">
+
+          <p>
+Change the current verbose setting (boolean)
+</p>
+
+        </div>
+      </div>
+
+
+
+    </div>
+
+
+
+
+  </div>
+
+<div id="validator-badges">
+  <p><small><a href="http://validator.w3.org/check/referer">[Validate]</a></small></p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,488 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>Class: MTik::Request [RDoc Documentation]</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Script-Type" content="text/javascript" />
+  <link rel="stylesheet" href="../.././rdoc-style.css" type="text/css" media="screen" />
+  <script type="text/javascript">
+  // <![CDATA[
+
+  function popupCode( url ) {
+    window.open(url, "Code", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=150,width=400")
+  }
+
+  function toggleCode( id ) {
+    if ( document.getElementById )
+      elem = document.getElementById( id );
+    else if ( document.all )
+      elem = eval( "document.all." + id );
+    else
+      return false;
+
+    elemStyle = elem.style;
+
+    if ( elemStyle.display != "block" ) {
+      elemStyle.display = "block"
+    } else {
+      elemStyle.display = "none"
+    }
+
+    return true;
+  }
+
+  // Make codeblocks hidden by default
+  document.writeln( "<style type=\"text/css\">div.method-source-code { display: none }<\/style>" )
+
+  // ]]>
+  </script>
+
+</head>
+<body>
+
+
+    <div id="classHeader">
+        <table class="header-table">
+        <tr class="top-aligned-row">
+          <td><strong>Class</strong></td>
+          <td class="class-name-in-header">MTik::Request</td>
+        </tr>
+        <tr class="top-aligned-row">
+            <td><strong>In:</strong></td>
+            <td>
+
+
+                <a href="../../files/lib/mtik/request_rb.html">
+
+                lib/mtik/request.rb
+
+                </a>
+
+
+        <br />
+
+            </td>
+        </tr>
+
+
+        <tr class="top-aligned-row">
+            <td><strong>Parent:</strong></td>
+            <td>
+
+                Array
+
+            </td>
+        </tr>
+
+        </table>
+    </div>
+  <!-- banner header -->
+
+  <div id="bodyContent">
+
+  <div id="contextContent">
+
+    <div id="description">
+      <p>
+A MikroTik API request object is stored as an array of MikroTik API-style
+words, the first word being the command, subsequent words (if any) are
+command arguments. Each request will automatically have a unique tag
+generated (so any +.tag=value+ arguments will be ignored). A request is
+incomplete until the final +!done+ response sentence has been received.
+</p>
+
+    </div>
+
+   </div>
+
+
+    <div id="method-list">
+      <h3 class="section-bar">Methods</h3>
+
+      <div class="name-list">
+
+        <a href="#M000012">addarg</a>&nbsp;&nbsp;
+
+        <a href="#M000011">addargs</a>&nbsp;&nbsp;
+
+        <a href="#M000010">append_callback</a>&nbsp;&nbsp;
+
+        <a href="#M000015">bytepack</a>&nbsp;&nbsp;
+
+        <a href="#M000014">callback</a>&nbsp;&nbsp;
+
+        <a href="#M000018">done!</a>&nbsp;&nbsp;
+
+        <a href="#M000013">done?</a>&nbsp;&nbsp;
+
+        <a href="#M000009">new</a>&nbsp;&nbsp;
+
+        <a href="#M000017">request</a>&nbsp;&nbsp;
+
+        <a href="#M000016">to_tikword</a>&nbsp;&nbsp;
+
+      </div>
+    </div>
+
+  </div>
+
+    <!-- if includes -->
+
+    <div id="section">
+
+
+
+    <div id="attribute-list">
+      <h3 class="section-bar">Attributes</h3>
+
+      <div class="name-list">
+        <table>
+
+        <tr class="top-aligned-row context-row">
+          <td class="context-item-name">await_completion</td>
+
+          <td class="context-item-value">&nbsp;[R]&nbsp;</td>
+
+          <td class="context-item-desc"></td>
+        </tr>
+
+        <tr class="top-aligned-row context-row">
+          <td class="context-item-name">command</td>
+
+          <td class="context-item-value">&nbsp;[R]&nbsp;</td>
+
+          <td class="context-item-desc"></td>
+        </tr>
+
+        <tr class="top-aligned-row context-row">
+          <td class="context-item-name">reply</td>
+
+          <td class="context-item-value">&nbsp;[R]&nbsp;</td>
+
+          <td class="context-item-desc"></td>
+        </tr>
+
+        <tr class="top-aligned-row context-row">
+          <td class="context-item-name">tag</td>
+
+          <td class="context-item-value">&nbsp;[R]&nbsp;</td>
+
+          <td class="context-item-desc"></td>
+        </tr>
+
+        </table>
+      </div>
+    </div>
+
+
+    <!-- if method_list -->
+
+    <div id="methods">
+
+      <h3 class="section-bar">Public Class methods</h3>
+
+
+      <div id="method-M000015" class="method-detail">
+        <a name="M000015"></a>
+
+        <div class="method-heading">
+
+          <a href="Request.src/M000015.html" target="Code" class="method-signature"
+            onclick="popupCode('Request.src/M000015.html');return false;">
+
+          <span class="method-name">bytepack</span><span class="method-args">(num)</span>
+
+          </a>
+
+        </div>
+
+        <div class="method-description">
+
+          <p>
+Utility method for packing an unsigned integer as a binary byte string of
+variable length
+</p>
+
+        </div>
+      </div>
+
+
+      <div id="method-M000009" class="method-detail">
+        <a name="M000009"></a>
+
+        <div class="method-heading">
+
+          <a href="Request.src/M000009.html" target="Code" class="method-signature"
+            onclick="popupCode('Request.src/M000009.html');return false;">
+
+          <span class="method-name">new</span><span class="method-args">(await_completion, command, *args, &amp;callback)</span>
+
+          </a>
+
+        </div>
+
+        <div class="method-description">
+
+          <p>
+Create a new <a href="Request.html">MTik::Request</a>.
+</p>
+<table>
+<tr><td valign="top"><tt>await_completion</tt> :</td><td>A boolean parameter indicating when callback(s)
+
+</td></tr>
+</table>
+<pre>
+                   should be called.  A value of _true_ will result
+                   in callback(s) only being called once, when the
+                   final +!done+ response is received.  A value of
+                   _false_ means callback(s) will be called _each_
+                   time a response sentence is received.
+</pre>
+<table>
+<tr><td valign="top"><tt>command</tt> :</td><td>The MikroTik API command to execute (a String). Examples:
+
+<pre>
+  * +&quot;/interface/getall&quot;+
+  * +&quot;/ip/route/add&quot;+
+</pre>
+</td></tr>
+<tr><td valign="top"><tt>args</tt> :</td><td>Zero or more String arguments for the command, already encoded in
++&#8221;=key=value&#8221;+, +&#8221;.id=value&#8221;+ or
++&#8221;?query&#8221;+ API format.
+
+</td></tr>
+<tr><td valign="top"><tt>callback</tt>:</td><td>A Proc or code block may be passed which will be called with two arguments:
+
+<pre>
+ 1. this MTik::Request object; and
+ 2. the most recently received response sentence.
+</pre>
+<p>
+When or how often callbacks are called depends on whether the
+<tt>await_completion</tt> parameter is <em>true</em> or <em>false</em> (see
+above).
+</p>
+</td></tr>
+</table>
+
+        </div>
+      </div>
+
+
+      <div id="method-M000016" class="method-detail">
+        <a name="M000016"></a>
+
+        <div class="method-heading">
+
+          <a href="Request.src/M000016.html" target="Code" class="method-signature"
+            onclick="popupCode('Request.src/M000016.html');return false;">
+
+          <span class="method-name">to_tikword</span><span class="method-args">(str)</span>
+
+          </a>
+
+        </div>
+
+        <div class="method-description">
+
+          <p>
+Another utility method to encode a byte string as a valid API
+_&#8220;word&#8220;_
+</p>
+
+        </div>
+      </div>
+
+
+      <h3 class="section-bar">Public Instance methods</h3>
+
+
+      <div id="method-M000012" class="method-detail">
+        <a name="M000012"></a>
+
+        <div class="method-heading">
+
+          <a href="Request.src/M000012.html" target="Code" class="method-signature"
+            onclick="popupCode('Request.src/M000012.html');return false;">
+
+          <span class="method-name">addarg</span><span class="method-args">(arg)</span>
+
+          </a>
+
+        </div>
+
+        <div class="method-description">
+
+          <p>
+Append a single argument to the not-yet-sent request
+</p>
+
+        </div>
+      </div>
+
+
+      <div id="method-M000011" class="method-detail">
+        <a name="M000011"></a>
+
+        <div class="method-heading">
+
+          <a href="Request.src/M000011.html" target="Code" class="method-signature"
+            onclick="popupCode('Request.src/M000011.html');return false;">
+
+          <span class="method-name">addargs</span><span class="method-args">(*args)</span>
+
+          </a>
+
+        </div>
+
+        <div class="method-description">
+
+          <p>
+Append one or more arguments to the not-yet-sent request
+</p>
+
+        </div>
+      </div>
+
+
+      <div id="method-M000010" class="method-detail">
+        <a name="M000010"></a>
+
+        <div class="method-heading">
+
+          <a href="Request.src/M000010.html" target="Code" class="method-signature"
+            onclick="popupCode('Request.src/M000010.html');return false;">
+
+          <span class="method-name">append_callback</span><span class="method-args">(*callbacks, &amp;callback)</span>
+
+          </a>
+
+        </div>
+
+        <div class="method-description">
+
+          <p>
+Add one or more callback Procs and/or a code block to the callback(s) that
+will be executed upon reply (either complete or partial, depending on the
+<em>await_completion</em> setting)
+</p>
+
+        </div>
+      </div>
+
+
+      <div id="method-M000014" class="method-detail">
+        <a name="M000014"></a>
+
+        <div class="method-heading">
+
+          <a href="Request.src/M000014.html" target="Code" class="method-signature"
+            onclick="popupCode('Request.src/M000014.html');return false;">
+
+          <span class="method-name">callback</span><span class="method-args">(sentence)</span>
+
+          </a>
+
+        </div>
+
+        <div class="method-description">
+
+          <p>
+Execute all callbacks, passing <em>sentence</em> along as the second
+parameter to each callback.
+</p>
+
+        </div>
+      </div>
+
+
+      <div id="method-M000018" class="method-detail">
+        <a name="M000018"></a>
+
+        <div class="method-heading">
+
+          <a href="Request.src/M000018.html" target="Code" class="method-signature"
+            onclick="popupCode('Request.src/M000018.html');return false;">
+
+          <span class="method-name">done!</span><span class="method-args">()</span>
+
+          </a>
+
+        </div>
+
+        <div class="method-description">
+
+          <p>
+Method the internal parser calls to flag this reply as completed upon
+receipt of a +!done+ reply sentence.
+</p>
+
+        </div>
+      </div>
+
+
+      <div id="method-M000013" class="method-detail">
+        <a name="M000013"></a>
+
+        <div class="method-heading">
+
+          <a href="Request.src/M000013.html" target="Code" class="method-signature"
+            onclick="popupCode('Request.src/M000013.html');return false;">
+
+          <span class="method-name">done?</span><span class="method-args">()</span>
+
+          </a>
+
+        </div>
+
+        <div class="method-description">
+
+          <p>
+Return the boolean completion status of the request, <em>true</em> if
+complete, <em>false</em> if not-yet-complete.
+</p>
+
+        </div>
+      </div>
+
+
+      <div id="method-M000017" class="method-detail">
+        <a name="M000017"></a>
+
+        <div class="method-heading">
+
+          <a href="Request.src/M000017.html" target="Code" class="method-signature"
+            onclick="popupCode('Request.src/M000017.html');return false;">
+
+          <span class="method-name">request</span><span class="method-args">()</span>
+
+          </a>
+
+        </div>
+
+        <div class="method-description">
+
+          <p>
+Encode this request as a binary byte string ready for transmission to a
+MikroTik device
+</p>
+
+        </div>
+      </div>
+
+
+
+    </div>
+
+
+
+
+  </div>
+
+<div id="validator-badges">
+  <p><small><a href="http://validator.w3.org/check/referer">[Validate]</a></small></p>
+</div>
+
+</body>
+</html>

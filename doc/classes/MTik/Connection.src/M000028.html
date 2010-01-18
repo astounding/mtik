@@ -1,0 +1,104 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>wait_for_reply (MTik::Connection)</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link rel="stylesheet" href="../../.././rdoc-style.css" type="text/css" media="screen" />
+</head>
+<body class="standalone-code">
+  <pre><span class="ruby-comment cmt"># File lib/mtik/connection.rb, line 218</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">wait_for_reply</span>
+    <span class="ruby-comment cmt">## Sanity check:</span>
+    <span class="ruby-keyword kw">if</span> <span class="ruby-ivar">@data</span>.<span class="ruby-identifier">length</span> <span class="ruby-operator">&gt;</span> <span class="ruby-value">0</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-operator">!</span><span class="ruby-ivar">@parsing</span>
+      <span class="ruby-identifier">raise</span> <span class="ruby-constant">MTik</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-node">&quot;An unexpected #{@data.length} bytes were found from a previous reply. API utility may be buggy.\n&quot;</span>)
+    <span class="ruby-keyword kw">end</span>
+    <span class="ruby-keyword kw">if</span> <span class="ruby-ivar">@requests</span>.<span class="ruby-identifier">length</span> <span class="ruby-operator">&lt;</span> <span class="ruby-value">1</span>
+      <span class="ruby-identifier">raise</span> <span class="ruby-constant">MTik</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value str">&quot;Cannot retrieve reply--No request was made.&quot;</span>)
+    <span class="ruby-keyword kw">end</span>
+
+    <span class="ruby-comment cmt">## SENTENCE READING LOOP:</span>
+    <span class="ruby-identifier">oldparsing</span> = <span class="ruby-ivar">@parsing</span>
+    <span class="ruby-ivar">@parsing</span> = <span class="ruby-keyword kw">true</span>
+    <span class="ruby-keyword kw">begin</span>
+      <span class="ruby-comment cmt">## Fetch a sentence:</span>
+      <span class="ruby-identifier">sentence</span> = <span class="ruby-identifier">get_sentence</span>  <span class="ruby-comment cmt">## This call must be ATOMIC or re-entrant safety fails</span>
+
+      <span class="ruby-comment cmt">## Check for '!fatal' before checking for a tag--'!fatal'</span>
+      <span class="ruby-comment cmt">## is never(???) tagged: </span>
+      <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">sentence</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-value str">'!fatal'</span>)
+        <span class="ruby-comment cmt">## FATAL ERROR has occured! (Or a '/quit' command was issued...)</span>
+        <span class="ruby-keyword kw">if</span> <span class="ruby-ivar">@data</span>.<span class="ruby-identifier">length</span> <span class="ruby-operator">&gt;</span> <span class="ruby-value">0</span>
+          <span class="ruby-identifier">raise</span> <span class="ruby-constant">MTik</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-node">&quot;Sanity check failed on receipt of '!fatal' message: #{@data.length} more bytes remain to be parsed. API utility may be buggy.&quot;</span>)
+        <span class="ruby-keyword kw">end</span>
+
+        <span class="ruby-identifier">quit</span> = <span class="ruby-keyword kw">false</span>
+        <span class="ruby-comment cmt">## Iterate over all incomplete requests:</span>
+        <span class="ruby-ivar">@requests</span>.<span class="ruby-identifier">each_value</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">r</span><span class="ruby-operator">|</span>
+          <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">r</span>.<span class="ruby-identifier">done?</span>
+            <span class="ruby-identifier">raise</span> <span class="ruby-constant">MTik</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value str">&quot;Sanity check failed: an outstanding request was flagged as done!&quot;</span>)
+          <span class="ruby-keyword kw">end</span>
+          <span class="ruby-ivar">@requests</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-identifier">r</span>.<span class="ruby-identifier">tag</span>)
+          <span class="ruby-identifier">r</span>.<span class="ruby-identifier">done!</span>
+          <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">r</span>.<span class="ruby-identifier">await_completion</span>
+            <span class="ruby-comment cmt">## Pass partial reply to callback along with '!fatal' sentence</span>
+            <span class="ruby-identifier">r</span>.<span class="ruby-identifier">callback</span>(<span class="ruby-identifier">sentence</span>)
+          <span class="ruby-keyword kw">end</span>
+          <span class="ruby-comment cmt">## Was this a '/quit' command?</span>
+          <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">r</span>.<span class="ruby-identifier">command</span> <span class="ruby-operator">==</span> <span class="ruby-value str">'/quit'</span>
+            <span class="ruby-identifier">quit</span> = <span class="ruby-keyword kw">true</span>
+            <span class="ruby-comment cmt">## Attach the untagged '!fatal' reply to the '/quit' command:</span>
+            <span class="ruby-identifier">r</span>.<span class="ruby-identifier">reply</span>.<span class="ruby-identifier">push</span>(<span class="ruby-identifier">sentence</span>)
+          <span class="ruby-keyword kw">end</span>
+        <span class="ruby-keyword kw">end</span>
+
+        <span class="ruby-comment cmt">## Raise fatal error if there wasn't a '/quit' command:</span>
+        <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">quit</span>
+          <span class="ruby-identifier">raise</span> <span class="ruby-constant">MTik</span><span class="ruby-operator">::</span><span class="ruby-constant">FatalError</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">sentence</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-value str">'message'</span>) <span class="ruby-operator">?</span> <span class="ruby-identifier">sentence</span>[<span class="ruby-value str">'message'</span>] <span class="ruby-operator">:</span> <span class="ruby-value str">''</span>)
+        <span class="ruby-keyword kw">end</span>
+        <span class="ruby-comment cmt">## On /quit, just return:</span>
+        <span class="ruby-ivar">@parsing</span> = <span class="ruby-identifier">oldparsing</span>
+        <span class="ruby-keyword kw">return</span>
+      <span class="ruby-keyword kw">end</span>
+
+      <span class="ruby-comment cmt">## We expect ALL sentences thus far to be tagged:</span>
+      <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">sentence</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-value str">'.tag'</span>)
+        <span class="ruby-comment cmt">## This code tags EVERY request, so NO RESPONSE should be untagged</span>
+        <span class="ruby-comment cmt">## except maybe a '!fatal' error...</span>
+        <span class="ruby-identifier">raise</span> <span class="ruby-constant">MTik</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value str">&quot;Unexected untagged response received.&quot;</span>)
+      <span class="ruby-keyword kw">end</span>
+      <span class="ruby-identifier">rtag</span> = <span class="ruby-identifier">sentence</span>[<span class="ruby-value str">'.tag'</span>]
+
+      <span class="ruby-comment cmt">## Find which request this reply sentence belongs to:</span>
+      <span class="ruby-keyword kw">unless</span> <span class="ruby-ivar">@requests</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-identifier">rtag</span>)
+        <span class="ruby-identifier">raise</span> <span class="ruby-constant">MTik</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-node">&quot;Unknown tag '#{rtag}' found in response.&quot;</span>)
+      <span class="ruby-keyword kw">end</span>
+      <span class="ruby-identifier">request</span> = <span class="ruby-ivar">@requests</span>[<span class="ruby-identifier">rtag</span>]
+
+      <span class="ruby-comment cmt">## Sanity check: No sentences should arrive for completed requests.</span>
+      <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">request</span>.<span class="ruby-identifier">done?</span>
+        <span class="ruby-identifier">raise</span> <span class="ruby-constant">MTik</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value str">&quot;Unexpected new reply sentence received for already-completed request.&quot;</span>)
+      <span class="ruby-keyword kw">end</span>
+
+      <span class="ruby-comment cmt">## Add the sentence to the request's reply:</span>
+      <span class="ruby-identifier">request</span>.<span class="ruby-identifier">reply</span>.<span class="ruby-identifier">push</span>(<span class="ruby-identifier">sentence</span>)
+
+      <span class="ruby-comment cmt">## On '!done', flag the request response as complete:</span>
+      <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">sentence</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-value str">'!done'</span>)
+        <span class="ruby-identifier">request</span>.<span class="ruby-identifier">done!</span>
+        <span class="ruby-comment cmt">## Pass the data to the callback:</span>
+        <span class="ruby-identifier">request</span>.<span class="ruby-identifier">callback</span>(<span class="ruby-identifier">sentence</span>)
+        <span class="ruby-comment cmt">## Remove the request:</span>
+        <span class="ruby-ivar">@requests</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-identifier">request</span>.<span class="ruby-identifier">tag</span>)
+      <span class="ruby-keyword kw">else</span>
+        <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">request</span>.<span class="ruby-identifier">await_completion</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-operator">!</span><span class="ruby-identifier">request</span>.<span class="ruby-identifier">done?</span>
+          <span class="ruby-comment cmt">## Pass the data to the callback:</span>
+          <span class="ruby-identifier">request</span>.<span class="ruby-identifier">callback</span>(<span class="ruby-identifier">sentence</span>)
+        <span class="ruby-keyword kw">end</span>
+      <span class="ruby-keyword kw">end</span>
+    <span class="ruby-comment cmt">## Keep reading sentences as long as there is data to be parsed:</span>
+    <span class="ruby-keyword kw">end</span> <span class="ruby-keyword kw">while</span> <span class="ruby-ivar">@data</span>.<span class="ruby-identifier">length</span> <span class="ruby-operator">&gt;</span> <span class="ruby-value">0</span>
+    <span class="ruby-ivar">@parsing</span> = <span class="ruby-identifier">oldparsing</span>
+  <span class="ruby-keyword kw">end</span></pre>
+</body>
+</html>

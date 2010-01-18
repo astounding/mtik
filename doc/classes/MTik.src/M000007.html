@@ -1,0 +1,116 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>interactive_client (MTik)</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link rel="stylesheet" href="../.././rdoc-style.css" type="text/css" media="screen" />
+</head>
+<body class="standalone-code">
+  <pre><span class="ruby-comment cmt"># File lib/mtik.rb, line 81</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">interactive_client</span>(<span class="ruby-identifier">host</span>, <span class="ruby-identifier">user</span>, <span class="ruby-identifier">pass</span>)
+    <span class="ruby-identifier">old_verbose</span> = <span class="ruby-constant">MTik</span><span class="ruby-operator">::</span><span class="ruby-identifier">verbose</span>
+    <span class="ruby-constant">MTik</span><span class="ruby-operator">::</span><span class="ruby-identifier">verbose</span> = <span class="ruby-keyword kw">true</span>
+    <span class="ruby-keyword kw">begin</span>
+      <span class="ruby-identifier">tk</span> = <span class="ruby-constant">MTik</span><span class="ruby-operator">::</span><span class="ruby-constant">Connection</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">:host</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">host</span>, <span class="ruby-identifier">:user</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">user</span>, <span class="ruby-identifier">:pass</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">pass</span>)
+    <span class="ruby-keyword kw">rescue</span> <span class="ruby-constant">MTik</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>, <span class="ruby-constant">Errno</span><span class="ruby-operator">::</span><span class="ruby-constant">ECONNREFUSED</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">e</span>
+      <span class="ruby-identifier">print</span> <span class="ruby-node">&quot;=== LOGIN ERROR: #{e.message}\n&quot;</span>
+      <span class="ruby-identifier">exit</span>
+    <span class="ruby-keyword kw">end</span>
+
+    <span class="ruby-keyword kw">while</span> <span class="ruby-keyword kw">true</span>
+      <span class="ruby-identifier">print</span> <span class="ruby-value str">&quot;\nCommand (/quit to end): &quot;</span>
+      <span class="ruby-identifier">cmd</span> = <span class="ruby-constant">STDIN</span>.<span class="ruby-identifier">gets</span>.<span class="ruby-identifier">sub</span>(<span class="ruby-regexp re">/^\s+/</span>, <span class="ruby-value str">''</span>).<span class="ruby-identifier">sub</span>(<span class="ruby-regexp re">/\s*[\r\n]*$/</span>, <span class="ruby-value str">''</span>)
+      <span class="ruby-identifier">maxreply</span> = <span class="ruby-value">0</span>
+      <span class="ruby-identifier">m</span> = <span class="ruby-regexp re">/^(\d+):/</span>.<span class="ruby-identifier">match</span>(<span class="ruby-identifier">cmd</span>)
+      <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">m</span>.<span class="ruby-identifier">nil?</span>
+        <span class="ruby-identifier">maxreply</span> = <span class="ruby-identifier">m</span>[<span class="ruby-value">1</span>].<span class="ruby-identifier">to_i</span>
+        <span class="ruby-identifier">cmd</span>.<span class="ruby-identifier">sub!</span>(<span class="ruby-regexp re">/^\d+:/</span>, <span class="ruby-value str">''</span>)
+      <span class="ruby-keyword kw">end</span>
+      <span class="ruby-identifier">args</span>  = <span class="ruby-identifier">cmd</span>.<span class="ruby-identifier">split</span>(<span class="ruby-regexp re">/\s+/</span>)
+      <span class="ruby-identifier">cmd</span>   = <span class="ruby-identifier">args</span>.<span class="ruby-identifier">shift</span>
+      <span class="ruby-keyword kw">next</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">cmd</span> <span class="ruby-operator">==</span> <span class="ruby-value str">''</span>
+      <span class="ruby-keyword kw">break</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">cmd</span> <span class="ruby-operator">==</span> <span class="ruby-value str">'/quit'</span>
+      <span class="ruby-keyword kw">unless</span> <span class="ruby-regexp re">/^(?:\/[a-zA-Z0-9]+)+$/</span>.<span class="ruby-identifier">match</span>(<span class="ruby-identifier">cmd</span>)
+        <span class="ruby-identifier">print</span> <span class="ruby-node">&quot;=== INVALID COMMAND: #{cmd}\n&quot;</span> <span class="ruby-keyword kw">if</span> <span class="ruby-constant">MTik</span><span class="ruby-operator">::</span><span class="ruby-identifier">debug</span> <span class="ruby-operator">||</span> <span class="ruby-constant">MTik</span><span class="ruby-operator">::</span><span class="ruby-identifier">verbose</span>
+        <span class="ruby-keyword kw">break</span>
+      <span class="ruby-keyword kw">end</span>
+      <span class="ruby-identifier">print</span> <span class="ruby-node">&quot;=== COMMAND: #{cmd}\n&quot;</span> <span class="ruby-keyword kw">if</span> <span class="ruby-constant">MTik</span><span class="ruby-operator">::</span><span class="ruby-identifier">debug</span> <span class="ruby-operator">||</span> <span class="ruby-constant">MTik</span><span class="ruby-operator">::</span><span class="ruby-identifier">verbose</span>
+      <span class="ruby-identifier">trap</span>  = <span class="ruby-keyword kw">false</span>
+      <span class="ruby-identifier">count</span> = <span class="ruby-value">0</span>
+      <span class="ruby-identifier">state</span> = <span class="ruby-value">0</span>
+      <span class="ruby-keyword kw">begin</span>
+        <span class="ruby-identifier">tk</span>.<span class="ruby-identifier">send_request</span>(<span class="ruby-keyword kw">false</span>, <span class="ruby-identifier">cmd</span>, <span class="ruby-identifier">args</span>) <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">req</span>, <span class="ruby-identifier">sentence</span><span class="ruby-operator">|</span>
+          <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">sentence</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-value str">'!trap'</span>)
+            <span class="ruby-identifier">trap</span> = <span class="ruby-identifier">sentence</span>
+            <span class="ruby-identifier">print</span> <span class="ruby-value str">&quot;=== TRAP: '&quot;</span> <span class="ruby-operator">+</span> (<span class="ruby-identifier">trap</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-value str">'message'</span>) <span class="ruby-operator">?</span> <span class="ruby-identifier">trap</span>[<span class="ruby-value str">'message'</span>] <span class="ruby-operator">:</span> <span class="ruby-value str">&quot;UNKNOWN&quot;</span>) <span class="ruby-operator">+</span> <span class="ruby-value str">&quot;'\n\n&quot;</span>
+          <span class="ruby-keyword kw">elsif</span> <span class="ruby-identifier">sentence</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-value str">'!re'</span>)
+            <span class="ruby-identifier">count</span> <span class="ruby-operator">+=</span> <span class="ruby-value">1</span>
+            <span class="ruby-comment cmt">## Auto-cancel '/tool/fetch' commands or any others that the user</span>
+            <span class="ruby-comment cmt">## specified a number of replies to auto-cancel at:</span>
+            <span class="ruby-keyword kw">if</span> (
+              <span class="ruby-identifier">cmd</span> <span class="ruby-operator">==</span> <span class="ruby-value str">'/tool/fetch'</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">sentence</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-value str">'status'</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">sentence</span>[<span class="ruby-value str">'status'</span>] <span class="ruby-operator">==</span> <span class="ruby-value str">'finished'</span>
+            ) <span class="ruby-operator">||</span> (<span class="ruby-identifier">maxreply</span> <span class="ruby-operator">&gt;</span> <span class="ruby-value">0</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">count</span> <span class="ruby-operator">==</span> <span class="ruby-identifier">maxreply</span>)
+              <span class="ruby-identifier">state</span> = <span class="ruby-value">2</span>
+              <span class="ruby-identifier">tk</span>.<span class="ruby-identifier">send_request</span>(<span class="ruby-keyword kw">true</span>, <span class="ruby-value str">'/cancel'</span>, <span class="ruby-value str">'=tag='</span> <span class="ruby-operator">+</span> <span class="ruby-identifier">req</span>.<span class="ruby-identifier">tag</span>) <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">req</span>, <span class="ruby-identifier">sentence</span><span class="ruby-operator">|</span>
+                <span class="ruby-identifier">state</span> = <span class="ruby-value">1</span>
+              <span class="ruby-keyword kw">end</span>
+            <span class="ruby-keyword kw">end</span>
+          <span class="ruby-keyword kw">elsif</span> <span class="ruby-operator">!</span><span class="ruby-identifier">sentence</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-value str">'!done'</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-operator">!</span><span class="ruby-identifier">sentence</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-value str">'!fatal'</span>)
+            <span class="ruby-identifier">raise</span> <span class="ruby-constant">MTik</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value str">&quot;Unknown or unexpected reply sentence type.&quot;</span>)
+          <span class="ruby-keyword kw">end</span>
+          <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">state</span> <span class="ruby-operator">==</span> <span class="ruby-value">0</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">req</span>.<span class="ruby-identifier">done?</span>
+            <span class="ruby-identifier">state</span> = <span class="ruby-value">1</span>
+          <span class="ruby-keyword kw">end</span>
+        <span class="ruby-keyword kw">end</span>
+        <span class="ruby-keyword kw">while</span> <span class="ruby-identifier">state</span> <span class="ruby-operator">!=</span> <span class="ruby-value">1</span>
+          <span class="ruby-identifier">tk</span>.<span class="ruby-identifier">wait_for_reply</span>
+        <span class="ruby-keyword kw">end</span>
+      <span class="ruby-keyword kw">rescue</span> <span class="ruby-constant">MTik</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">e</span>
+        <span class="ruby-identifier">print</span> <span class="ruby-node">&quot;=== ERROR: #{e.message}\n&quot;</span>
+      <span class="ruby-keyword kw">end</span>
+      <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">tk</span>.<span class="ruby-identifier">connected?</span>
+        <span class="ruby-keyword kw">begin</span>
+          <span class="ruby-identifier">tk</span>.<span class="ruby-identifier">login</span>
+        <span class="ruby-keyword kw">rescue</span> <span class="ruby-constant">MTik</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">e</span>
+          <span class="ruby-identifier">print</span> <span class="ruby-node">&quot;=== LOGIN ERROR: #{e.message}\n&quot;</span>
+          <span class="ruby-identifier">tk</span>.<span class="ruby-identifier">close</span>
+          <span class="ruby-identifier">exit</span>
+        <span class="ruby-keyword kw">end</span>
+      <span class="ruby-keyword kw">end</span>
+    <span class="ruby-keyword kw">end</span>
+ 
+    <span class="ruby-identifier">reply</span> = <span class="ruby-identifier">tk</span>.<span class="ruby-identifier">get_reply</span>(<span class="ruby-value str">'/quit'</span>)
+    <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">reply</span>[<span class="ruby-value">0</span>].<span class="ruby-identifier">key?</span>(<span class="ruby-value str">'!fatal'</span>)
+      <span class="ruby-identifier">raise</span> <span class="ruby-constant">MTik</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value str">&quot;Unexpected response to '/quit' command.&quot;</span>)
+    <span class="ruby-keyword kw">end</span>
+
+    <span class="ruby-comment cmt">## Extract any device-provided message from the '!fatal' response</span>
+    <span class="ruby-comment cmt">## to the /quit command:</span>
+    <span class="ruby-identifier">print</span> <span class="ruby-value str">&quot;=== SESSION TERMINATED&quot;</span>
+    <span class="ruby-identifier">message</span> = <span class="ruby-value str">''</span>
+    <span class="ruby-identifier">reply</span>[<span class="ruby-value">0</span>].<span class="ruby-identifier">each_key</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">key</span><span class="ruby-operator">|</span>
+      <span class="ruby-keyword kw">next</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">key</span> <span class="ruby-operator">==</span> <span class="ruby-value str">'!fatal'</span>
+      <span class="ruby-identifier">message</span> <span class="ruby-operator">+=</span> <span class="ruby-node">&quot;'#{key}'&quot;</span>
+      <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">reply</span>[<span class="ruby-value">0</span>][<span class="ruby-identifier">key</span>].<span class="ruby-identifier">nil?</span>
+        <span class="ruby-identifier">message</span> <span class="ruby-operator">+=</span> <span class="ruby-node">&quot; =&gt; '#{reply[0][key]}'&quot;</span>
+      <span class="ruby-keyword kw">end</span>
+    <span class="ruby-keyword kw">end</span>
+    <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">message</span>.<span class="ruby-identifier">length</span> <span class="ruby-operator">&gt;</span> <span class="ruby-value">0</span>
+      <span class="ruby-identifier">print</span> <span class="ruby-value str">&quot;: &quot;</span> <span class="ruby-operator">+</span> <span class="ruby-identifier">message</span>
+    <span class="ruby-keyword kw">else</span>
+      <span class="ruby-identifier">print</span> <span class="ruby-value str">&quot; ===&quot;</span>
+    <span class="ruby-keyword kw">end</span>
+    <span class="ruby-identifier">print</span> <span class="ruby-value str">&quot;\n\n&quot;</span>
+
+    <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">tk</span>.<span class="ruby-identifier">connected?</span>
+      <span class="ruby-identifier">print</span> <span class="ruby-value str">&quot;=== Disconnected ===\n\n&quot;</span>
+    <span class="ruby-keyword kw">else</span>
+      <span class="ruby-comment cmt">## In theory, this should never execute:</span>
+      <span class="ruby-identifier">tk</span>.<span class="ruby-identifier">close</span>
+    <span class="ruby-keyword kw">end</span>
+
+    <span class="ruby-constant">MTik</span><span class="ruby-operator">::</span><span class="ruby-identifier">verbose</span> = <span class="ruby-identifier">old_verbose</span>
+  <span class="ruby-keyword kw">end</span></pre>
+</body>
+</html>

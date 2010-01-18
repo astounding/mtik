@@ -1,0 +1,17 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>wait_all (MTik::Connection)</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link rel="stylesheet" href="../../.././rdoc-style.css" type="text/css" media="screen" />
+</head>
+<body class="standalone-code">
+  <pre><span class="ruby-comment cmt"># File lib/mtik/connection.rb, line 203</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">wait_all</span>
+    <span class="ruby-keyword kw">while</span> <span class="ruby-identifier">outstanding</span> <span class="ruby-operator">&gt;</span> <span class="ruby-value">0</span>
+      <span class="ruby-identifier">wait_for_reply</span>
+    <span class="ruby-keyword kw">end</span>
+  <span class="ruby-keyword kw">end</span></pre>
+</body>
+</html>

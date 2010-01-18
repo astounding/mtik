@@ -1,0 +1,10 @@
+2010-01-15 (15 JAN 2010)  VERSION 3.0.0  Aaron D. Gifford  (http://www.aarongifford.com/)
+  * Bumped the version to 3.0.0 due to modularization and gemification changes
+  that break any software using the older Ruby API classes.
+  * Split out (as separate files) and added a few more examples:
+      cli.rb
+      command.rb
+      json.rb
+      fetch.rb
+  * Added VERSION.txt, CHANGELOG.txt, README.txt, LICENSE.txt, and *.gemspec files, moved
+    the example files into the bin subdirectory

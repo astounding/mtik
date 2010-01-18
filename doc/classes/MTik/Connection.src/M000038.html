@@ -1,0 +1,62 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>get_tikword (MTik::Connection)</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link rel="stylesheet" href="../../.././rdoc-style.css" type="text/css" media="screen" />
+</head>
+<body class="standalone-code">
+  <pre><span class="ruby-comment cmt"># File lib/mtik/connection.rb, line 424</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">get_tikword</span>(<span class="ruby-identifier">data</span>)
+    <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">data</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">String</span>)
+      <span class="ruby-identifier">raise</span> <span class="ruby-constant">ArgumentError</span>.<span class="ruby-identifier">new</span>(<span class="ruby-node">&quot;bad argument: expected String but got #{data.class}&quot;</span>)
+    <span class="ruby-keyword kw">end</span>
+
+    <span class="ruby-comment cmt">## Be sure we're working in 8-bit binary (Ruby 1.9+):</span>
+    <span class="ruby-keyword kw">if</span> <span class="ruby-constant">RUBY_VERSION</span> <span class="ruby-operator">&gt;=</span> <span class="ruby-value str">'1.9.0'</span>
+      <span class="ruby-identifier">data</span>.<span class="ruby-identifier">force_encoding</span>(<span class="ruby-constant">Encoding</span><span class="ruby-operator">::</span><span class="ruby-constant">BINARY</span>)
+    <span class="ruby-keyword kw">end</span>
+
+    <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">data</span>.<span class="ruby-identifier">length</span> <span class="ruby-operator">&gt;</span> <span class="ruby-value">0</span>
+      <span class="ruby-keyword kw">return</span> <span class="ruby-value">0</span>, <span class="ruby-keyword kw">nil</span>   <span class="ruby-comment cmt">## Not enough data to parse</span>
+    <span class="ruby-keyword kw">end</span>
+
+    <span class="ruby-comment cmt">## The first byte tells us how the word length is encoded:</span>
+    <span class="ruby-identifier">len</span> = <span class="ruby-value">0</span>
+    <span class="ruby-identifier">len_byte</span> = <span class="ruby-identifier">cbyte</span>(<span class="ruby-identifier">data</span>, <span class="ruby-value">0</span>)
+    <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">len_byte</span> <span class="ruby-operator">&amp;</span> <span class="ruby-value">0x80</span> <span class="ruby-operator">==</span> <span class="ruby-value">0</span>
+      <span class="ruby-identifier">len</span> = <span class="ruby-identifier">len_byte</span> <span class="ruby-operator">&amp;</span> <span class="ruby-value">0x7f</span>
+      <span class="ruby-identifier">i</span> = <span class="ruby-value">1</span>
+    <span class="ruby-keyword kw">elsif</span> <span class="ruby-identifier">len_byte</span> <span class="ruby-operator">&amp;</span> <span class="ruby-value">0x40</span> <span class="ruby-operator">==</span> <span class="ruby-value">0</span>
+      <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">data</span>.<span class="ruby-identifier">length</span> <span class="ruby-operator">&gt;</span> <span class="ruby-value">0x81</span>
+        <span class="ruby-keyword kw">return</span> <span class="ruby-value">0</span>, <span class="ruby-keyword kw">nil</span>   <span class="ruby-comment cmt">## Not enough data to parse</span>
+      <span class="ruby-keyword kw">end</span>
+      <span class="ruby-identifier">len</span> = ((<span class="ruby-identifier">len_byte</span> <span class="ruby-operator">&amp;</span> <span class="ruby-value">0x3f</span>) <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-value">8</span>) <span class="ruby-operator">|</span> <span class="ruby-identifier">cbyte</span>(<span class="ruby-identifier">data</span>, <span class="ruby-value">1</span>)
+      <span class="ruby-identifier">i</span> = <span class="ruby-value">2</span>
+    <span class="ruby-keyword kw">elsif</span> <span class="ruby-identifier">len_byte</span> <span class="ruby-operator">&amp;</span> <span class="ruby-value">0x20</span> <span class="ruby-operator">==</span> <span class="ruby-value">0</span>
+      <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">data</span>.<span class="ruby-identifier">length</span> <span class="ruby-operator">&gt;</span> <span class="ruby-value">0x4002</span>
+        <span class="ruby-keyword kw">return</span> <span class="ruby-value">0</span>, <span class="ruby-keyword kw">nil</span>   <span class="ruby-comment cmt">## Not enough data to parse</span>
+      <span class="ruby-keyword kw">end</span>
+      <span class="ruby-identifier">len</span> = ((<span class="ruby-identifier">len_byte</span> <span class="ruby-operator">&amp;</span> <span class="ruby-value">0x1f</span>) <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-value">16</span>) <span class="ruby-operator">|</span> (<span class="ruby-identifier">cbyte</span>(<span class="ruby-identifier">data</span>, <span class="ruby-value">1</span>) <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-value">8</span>) <span class="ruby-operator">|</span> <span class="ruby-identifier">cbyte</span>(<span class="ruby-identifier">data</span>, <span class="ruby-value">2</span>)
+      <span class="ruby-identifier">i</span> = <span class="ruby-value">3</span>
+    <span class="ruby-keyword kw">elsif</span> <span class="ruby-identifier">len_byte</span> <span class="ruby-operator">&amp;</span> <span class="ruby-value">0x10</span> <span class="ruby-operator">==</span> <span class="ruby-value">0</span>
+      <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">data</span>.<span class="ruby-identifier">length</span> <span class="ruby-operator">&gt;</span> <span class="ruby-value">0x200003</span>
+        <span class="ruby-keyword kw">return</span> <span class="ruby-value">0</span>, <span class="ruby-keyword kw">nil</span>   <span class="ruby-comment cmt">## Not enough data to parse</span>
+      <span class="ruby-keyword kw">end</span>
+      <span class="ruby-identifier">len</span> = ((<span class="ruby-identifier">len_byte</span> <span class="ruby-operator">&amp;</span> <span class="ruby-value">0x0f</span>) <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-value">24</span>) <span class="ruby-operator">|</span> (<span class="ruby-identifier">cbyte</span>(<span class="ruby-identifier">data</span>, <span class="ruby-value">1</span>) <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-value">16</span>) <span class="ruby-operator">|</span> (<span class="ruby-identifier">cbyte</span>(<span class="ruby-identifier">data</span>, <span class="ruby-value">2</span>) <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-value">8</span>) <span class="ruby-operator">|</span> <span class="ruby-identifier">cbyte</span>(<span class="ruby-identifier">data</span>, <span class="ruby-value">3</span>)
+      <span class="ruby-identifier">i</span> = <span class="ruby-value">4</span>
+    <span class="ruby-keyword kw">elsif</span> <span class="ruby-identifier">len_byte</span> <span class="ruby-operator">==</span> <span class="ruby-value">0xf0</span>
+      <span class="ruby-identifier">len</span> = (<span class="ruby-identifier">cbyte</span>(<span class="ruby-identifier">data</span>, <span class="ruby-value">1</span>) <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-value">24</span>) <span class="ruby-operator">|</span> (<span class="ruby-identifier">cbyte</span>(<span class="ruby-identifier">data</span>, <span class="ruby-value">2</span>) <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-value">16</span>) <span class="ruby-operator">|</span> (<span class="ruby-identifier">cbyte</span>(<span class="ruby-identifier">data</span>, <span class="ruby-value">3</span>) <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-value">8</span>) <span class="ruby-operator">|</span> <span class="ruby-identifier">cbyte</span>(<span class="ruby-identifier">data</span>, <span class="ruby-value">4</span>)
+      <span class="ruby-identifier">i</span> = <span class="ruby-value">5</span>
+    <span class="ruby-keyword kw">else</span>
+      <span class="ruby-comment cmt">## This will also catch reserved control words where the first byte is &gt;= 0xf8</span>
+      <span class="ruby-identifier">raise</span> <span class="ruby-constant">ArgumentError</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value str">&quot;bad argument: String length encoding is invalid&quot;</span>)
+    <span class="ruby-keyword kw">end</span>
+    <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">data</span>.<span class="ruby-identifier">length</span> <span class="ruby-operator">-</span> <span class="ruby-identifier">i</span> <span class="ruby-operator">&lt;</span> <span class="ruby-identifier">len</span>
+      <span class="ruby-keyword kw">return</span> <span class="ruby-value">0</span>, <span class="ruby-keyword kw">nil</span>   <span class="ruby-comment cmt">## Not enough data to parse</span>
+    <span class="ruby-keyword kw">end</span>
+    <span class="ruby-keyword kw">return</span> <span class="ruby-identifier">i</span> <span class="ruby-operator">+</span> <span class="ruby-identifier">len</span>, <span class="ruby-identifier">data</span>[<span class="ruby-identifier">i</span>, <span class="ruby-identifier">len</span>]
+  <span class="ruby-keyword kw">end</span></pre>
+</body>
+</html>

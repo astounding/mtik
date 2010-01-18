@@ -1,0 +1,36 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>send_request (MTik::Connection)</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link rel="stylesheet" href="../../.././rdoc-style.css" type="text/css" media="screen" />
+</head>
+<body class="standalone-code">
+  <pre><span class="ruby-comment cmt"># File lib/mtik/connection.rb, line 335</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">send_request</span>(<span class="ruby-identifier">await_completion</span>, <span class="ruby-identifier">command</span>, <span class="ruby-operator">*</span><span class="ruby-identifier">args</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">callback</span>)
+    <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">await_completion</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">MTik</span><span class="ruby-operator">::</span><span class="ruby-constant">Request</span>)
+      <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">req</span>.<span class="ruby-identifier">done?</span>
+        <span class="ruby-identifier">raise</span> <span class="ruby-constant">MTik</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value str">&quot;Cannot MTik#send_request() with an already-completed MTik::Request object.&quot;</span>)
+      <span class="ruby-keyword kw">end</span>
+      <span class="ruby-identifier">req</span> = <span class="ruby-identifier">await_completion</span>
+      <span class="ruby-identifier">req</span>.<span class="ruby-identifier">addarg</span>(<span class="ruby-identifier">command</span>)
+      <span class="ruby-identifier">req</span>.<span class="ruby-identifier">addargs</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">args</span>)
+    <span class="ruby-keyword kw">else</span>
+      <span class="ruby-identifier">req</span> = <span class="ruby-constant">MTik</span><span class="ruby-operator">::</span><span class="ruby-constant">Request</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">await_completion</span>, <span class="ruby-identifier">command</span>, <span class="ruby-operator">*</span><span class="ruby-identifier">args</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">callback</span>)
+    <span class="ruby-keyword kw">end</span>
+    <span class="ruby-comment cmt">## Add the new outstanding request</span>
+    <span class="ruby-ivar">@requests</span>[<span class="ruby-identifier">req</span>.<span class="ruby-identifier">tag</span>] = <span class="ruby-identifier">req</span>
+
+    <span class="ruby-keyword kw">if</span> <span class="ruby-constant">MTik</span><span class="ruby-operator">::</span><span class="ruby-identifier">debug</span> <span class="ruby-operator">||</span> <span class="ruby-constant">MTik</span><span class="ruby-operator">::</span><span class="ruby-identifier">verbose</span>
+      <span class="ruby-identifier">req</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">x</span><span class="ruby-operator">|</span>
+        <span class="ruby-constant">STDERR</span>.<span class="ruby-identifier">print</span> <span class="ruby-node">&quot;&lt;&lt;&lt; '#{x}' (#{x.length})\n&quot;</span>
+      <span class="ruby-keyword kw">end</span>
+    <span class="ruby-keyword kw">end</span>
+    <span class="ruby-constant">STDERR</span>.<span class="ruby-identifier">print</span> <span class="ruby-value str">&quot;&lt;&lt;&lt; END-OF-SENTENCE\n\n&quot;</span> <span class="ruby-keyword kw">if</span> <span class="ruby-constant">MTik</span><span class="ruby-operator">::</span><span class="ruby-identifier">debug</span> <span class="ruby-operator">||</span> <span class="ruby-constant">MTik</span><span class="ruby-operator">::</span><span class="ruby-identifier">verbose</span>
+
+    <span class="ruby-ivar">@sock</span>.<span class="ruby-identifier">send</span>(<span class="ruby-identifier">req</span>.<span class="ruby-identifier">request</span>, <span class="ruby-value">0</span>)
+    <span class="ruby-keyword kw">return</span> <span class="ruby-identifier">req</span>
+  <span class="ruby-keyword kw">end</span></pre>
+</body>
+</html>
