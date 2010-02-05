@@ -353,6 +353,12 @@ class MTik::Connection
     end
     STDERR.print "<<< END-OF-SENTENCE\n\n" if MTik::debug || MTik::verbose
 
+    req.conn(self) ## Associate the request to this connection object:
+    return req.send
+  end
+
+  ## Send the request object over the socket
+  def xmit(req)
     @sock.send(req.request, 0)
     return req
   end
@@ -480,10 +486,9 @@ class MTik::Connection
   ##   _callback_ :: Callback called for status updates. The three
   ##                 arguments passed to the callback are:
   ##                   _status_ :: Either 'downloading', 'connecting',
-  ##                               'failed', or 'finished'. If none
-  ##                               of these, then it indicates that a
-  ##                               '!trap' error occured and the value
-  ##                               is the trap message.
+  ##                               'failed', 'requesting', or 'finished',
+  ##                               otherwise a '!trap' error occured,
+  ##                               and the value is the trap message.
   ##                   _total_ ::  Final expected file size in bytes
   ##                   _bytes_ ::  Number of bytes transferred so far
   def fetch(url, filename, &callback)
@@ -505,7 +510,7 @@ class MTik::Connection
           total = s['total'].to_i
           bytes = s['downloaded'].to_i
           callback.call(status, total, bytes)
-        when 'connecting'
+        when 'connecting', 'requesting'
           callback.call(status, 0, 0)
         when 'failed', 'finished'
           bytes = total if status == 'finished'

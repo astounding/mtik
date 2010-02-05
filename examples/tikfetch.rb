@@ -1,9 +1,8 @@
-#!/usr/local/bin/ruby
+#!/usr/bin/env ruby
 ########################################################################
 #--
 #
 # FILE:     fetch.rb -- Example of using the Ruby MikroTik API in Ruby
-# VERSION:  3.3.0
 #
 #++
 # Author::    Aaron D. Gifford - http://www.aarongifford.com/
@@ -36,6 +35,8 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 ########################################################################
+$LOAD_PATH.unshift(File.dirname(__FILE__)+'/../lib')
+
 require 'rubygems'
 require 'mtik'
 
@@ -53,7 +54,7 @@ user = ARGV.shift
 pass = ARGV.shift
 begin
   mt = MTik::Connection.new(:host=>host, :user=>user, :pass=>pass)
-rescue Errno::ETIMEDOUT, Errno::ENETUNREACH, Errno::EHOSTUNREACH, MTikError => e
+rescue Errno::ETIMEDOUT, Errno::ENETUNREACH, Errno::EHOSTUNREACH, MTik::Error => e
   print ">>> ERROR CONNECTING: #{e}"
   exit
 end
@@ -84,7 +85,7 @@ while ARGV.length > 0
         print ">>> OK: Downloaded #{bytes} bytes of #{total} of file " +
               "'#{filename}' " +
               (total > 0 ? '%0.2f' % (100.0*bytes/total) : '0') +
-              "\n"
+              "%\n"
       else
         print ">>> ERROR: The following trap error occured: #{status}\n"
       end

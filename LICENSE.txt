@@ -2,7 +2,6 @@
 #--
 #
 # GEM:      MTik -- A Ruby gem implementing the MikroTik RouterOS API
-# VERSION:  3.3.0
 #
 #++
 # Author::    Aaron D. Gifford - http://www.aarongifford.com/

@@ -1,9 +1,8 @@
-#!/usr/local/bin/ruby
+#!/usr/bin/env ruby
 ########################################################################
 #--
 #
 # FILE:     json.rb -- Example of using the Ruby MikroTik API in Ruby
-# VERSION:  3.3.0
 #
 #++
 # Author::    Aaron D. Gifford - http://www.aarongifford.com/
@@ -36,77 +35,34 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 ########################################################################
+$LOAD_PATH.unshift(File.dirname(__FILE__)+'/../lib')
+
 require 'rubygems'
 require 'mtik'
+require 'json'
 
 unless ARGV.length > 3
-  STDERR.print("Usage: #{$0} <host> <user> <pass> <command> [<args>...]\n")
+  STDERR.print("Usage: #{$0} <host> <user> <pass> <command> [<args>...] [<command> [<args> ...]]\n")
   exit(-1)
 end
 
-## Quick-n-dirty JSON-ifyer--For any real JSON application
-## use "require 'json' and do it right.
-def json_str(str)
-  newstr = "'"
-  str.each_byte do |byte|
-    if byte == 92     ## back-slash
-      newstr += '\\\\'
-    elsif byte == 34  ## double-quote
-      newstr += '\\"'
-    elseif byte == 39 ## apostrophe/single-quote
-      newstr += '\\' + "'"
-    elseif byte == 47 ## forward-slash
-      newstr += '\\/'
-    elsif byte == 8   ## backspace
-      newstr += '\\b'
-    elsif byte == 12  ## formfeed
-      newstr += '\\f'
-    elsif byte == 10  ## linefeed
-      newstr += '\\n'
-    elsif byte == 13  ## carriage return
-      newstr += '\\r'
-    elsif byte == 9   ## horizontal tab
-      newstr += '\\t'
-    elsif byte == 38  ## ampersand
-      newstr += sprintf('\\u%04X', byte)
-    elsif byte == 60  ## less-than
-      newstr += sprintf('\\u%04X', byte)
-    elsif byte == 62  ## greater-than
-      newstr += sprintf('\\u%04X', byte)
-    elsif byte >= 32 && byte <= 126
-      newstr += byte.chr
-    else
-      newstr += sprintf('\\u%04X', byte)
-    end
+## Detect multiple command sequences and build an array of arrays
+## where each outer array element is a command plus arguments:
+command = Array.new
+i = 3
+while i < ARGV.length
+  if ARGV[i][0,1] == '/'  ## Command detected...
+    command << [ ARGV[i] ]
+  else
+    command[command.length-1] << ARGV[i]
   end
-  return newstr + "'"
+  i += 1
 end
 
-def json_reply(response)
-  return '[' +
-  response.map do |sentence| 
-    '{' +
-    sentence.map do |key, value|
-      json_str(key) + ': ' +
-      if value.nil?
-        'NULL'
-      elsif /^-?(?:\d+(\.\d+)?|\d*\.\d+)$/.match(value)
-        value
-      else
-        json_str(value)
-      end
-    end.join(',') +
-    '}'
-  end.join(',') +
-  ']'
-end
-
-print json_reply(
-  MTik::command(
-    :host=>ARGV[0],
-    :user=>ARGV[1],
-    :pass=>ARGV[2],
-    :command=>ARGV[3, ARGV.length-1]
-  )[0]
-) + "\n"
+print MTik::command(
+  :host=>ARGV[0],
+  :user=>ARGV[1],
+  :pass=>ARGV[2],
+  :command=>command
+).to_json + "\n"
 

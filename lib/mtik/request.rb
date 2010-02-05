@@ -66,7 +66,8 @@ class MTik::Request < Array
     @reply            = MTik::Reply.new
     @command          = command
     @await_completion = await_completion
-    @complete         = false
+    @state            = 'new'  ## 'new', 'sent', 'cancelled', 'complete'
+    @conn             = nil
 
     args.flatten!
     @callbacks = Array.new
@@ -132,10 +133,10 @@ class MTik::Request < Array
   ## Return the boolean completion status of the request,
   ## _true_ if complete, _false_ if not-yet-complete.
   def done?
-    return @complete
+    return @state == 'complete'
   end
 
-  attr_reader  :command, :tag, :await_completion, :reply
+  attr_reader :command, :tag, :await_completion, :reply, :state
 
   ## Execute all callbacks, passing _sentence_ along as
   ## the second parameter to each callback.
@@ -194,6 +195,23 @@ class MTik::Request < Array
     end
   end
 
+  ## Associate this request with a connection:
+  def conn(c)
+    unless c.is_a?(MTik::Connection)
+      raise RuntimeError.new(
+        "Unexpected class '#{c.class}' in MTik::Request#conn() " +
+        "(expected MTik::Connection)"
+      )
+    end
+    unless @conn.nil?
+      raise MTik::Error.new(
+        "Method MTik::Request#conn() called when MTik::Request " +
+        "is already associated with an MTik::Connection object."
+      )
+    end
+    @conn = c
+  end
+
   ## Encode this request as a binary byte string ready for transmission
   ## to a MikroTik device
   def request
@@ -201,10 +219,47 @@ class MTik::Request < Array
     return self.map {|w| MTik::Request::to_tikword(w)}.join + 0x00.chr
   end
 
+  ## Send the request over the associated connection:
+  def send
+    if @conn.nil?
+      raise MTik::Error.new(
+        "Method MTik::Request#send() called when MTik::Request " +
+        "is not yet associated with an MTik::Connection object."
+      )
+    end
+    @state = 'sent'
+    return @conn.xmit(self)
+  end
+
+  ## Cancel a 'sent' request:
+  def cancel(&callback)
+    if @state != 'sent'
+      raise MTik::Error.new(
+        "Method MTik::Request#cancel() called with state '#{@state}' " +
+        "(should only call when state is 'sent')"
+      )
+    end
+    @conn.send_request(true, '/cancel', '=tag=' + @tag, &callback)
+    @state = 'cancelled'
+  end
+
+  ## Cancel a 'sent' request:
+  def cancel_each(&callback)
+    if @state != 'sent'
+      raise MTik::Error.new(
+        "Method MTik::Request#cancel() called with state '#{@state}' " +
+        "(should only call when state is 'sent')"
+      )
+    end
+    @conn.send_request(false, '/cancel', '=tag=' + @tag, &callback)
+    @state = 'cancelled'
+  end
+
   ## Method the internal parser calls to flag this reply as completed
   ## upon receipt of a +!done+ reply sentence.
   def done!
-    return @complete = true
+    @state = 'complete'
+    return true
   end
 end
 

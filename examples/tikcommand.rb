@@ -1,9 +1,8 @@
-#!/usr/local/bin/ruby
+#!/usr/bin/env ruby
 ########################################################################
 #--
 #
 # FILE:     command.rb -- Example of using the Ruby MikroTik API in Ruby
-# VERSION:  3.3.0
 #
 #++
 # Author::    Aaron D. Gifford - http://www.aarongifford.com/
@@ -36,20 +35,35 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 ########################################################################
+$LOAD_PATH.unshift(File.dirname(__FILE__)+'/../lib')
+
 require 'rubygems'
 require 'mtik'
 
 unless ARGV.length > 3
-  STDERR.print("Usage: #{$0} <host> <user> <pass> <command> [<args>...]\n")
+  STDERR.print("Usage: #{$0} <host> <user> <pass> <command> [<args>...] [<command> [<args> ...]]\n")
   exit(-1)
 end
 
 MTik::verbose = true  ## Set how you want
 
+## Detect multiple command sequences and build an array of arrays
+## where each outer array element is a command plus arguments:
+command = Array.new
+i = 3
+while i < ARGV.length
+  if ARGV[i][0,1] == '/'  ## Command detected...
+    command << [ ARGV[i] ]
+  else
+    command[command.length-1] << ARGV[i]
+  end
+  i += 1
+end
+
 p MTik::command(
   :host=>ARGV[0],
   :user=>ARGV[1],
   :pass=>ARGV[2],
-  :command=>ARGV[3, ARGV.length-1]
+  :command=>command
 )
 

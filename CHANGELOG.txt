@@ -1,3 +1,22 @@
+2010-02-05 (05 FEB 2010)  VERSION 3.0.2  Aaron D. Gifford (http://www.aarongifford.com)
+  * Typo fixes to example tikfetch.rb
+  * Multi-command functionality added to interactive client and to tikcommand.rb example
+  * Removed kludge path stuff for author's broken FreeBSD Ruby 1.9.1 gem system
+  * Removed lame JSON-ifier from example and switched to require 'json' instead
+
+2010-01-19 (19 JAN 2010)  VERSION 3.0.1  Aaron D. Gifford (http://www.aarongifford.com/)
+  * Added support for '/tool/fetch' 'requesting' state
+  * Added auto-cancel of finished '/tool/fetch' command in MTik#command()
+  * Added MTik::Request#cancel() method
+  * Added MTik::Request#state() attr_reader (and new @state object property to replace
+    the @completed boolean property)
+  * MTik::Request objects now associate with the appropriate MTik::Connection object
+    upon MTik::Connection transmitting the request to a device (which facilities)
+    the MTik::Request@cancel() method
+  * Removed gem root directory mtik.rb file that was acting as a kludge for the author's
+    messed-up FreeBSD Ruby 1.9 installation
+  * Renamed examples with a 'tik' prefix
+
 2010-01-15 (15 JAN 2010)  VERSION 3.0.0  Aaron D. Gifford  (http://www.aarongifford.com/)
   * Bumped the version to 3.0.0 due to modularization and gemification changes
   that break any software using the older Ruby API classes.

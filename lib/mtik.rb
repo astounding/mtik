@@ -31,13 +31,12 @@
 ## ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 ## THE POSSIBILITY OF SUCH DAMAGE.
 ############################################################################
-
 module MTik
   require 'mtik/error.rb'
-  require 'mtik/timeouterror.rb'
   require 'mtik/fatalerror.rb'
-  require 'mtik/reply.rb'
+  require 'mtik/timeouterror.rb'
   require 'mtik/request.rb'
+  require 'mtik/reply.rb'
   require 'mtik/connection.rb'
 
   ## Default MikroTik RouterOS API TCP port:
@@ -116,13 +115,14 @@ module MTik
             print "=== TRAP: '" + (trap.key?('message') ? trap['message'] : "UNKNOWN") + "'\n\n"
           elsif sentence.key?('!re')
             count += 1
-            ## Auto-cancel '/tool/fetch' commands or any others that the user
-            ## specified a number of replies to auto-cancel at:
-            if (
+            ## Auto-cancel any '/tool/fetch' commands that have finished,
+            ## or commands that have received the specified number of
+            ## replies:
+            if req.state != 'cancelled' && (
               cmd == '/tool/fetch' && sentence.key?('status') && sentence['status'] == 'finished'
             ) || (maxreply > 0 && count == maxreply)
               state = 2
-              tk.send_request(true, '/cancel', '=tag=' + req.tag) do |req, sentence|
+              req.cancel do |req, sentence|  
                 state = 1
               end
             end
@@ -205,28 +205,36 @@ module MTik
     replies = Array.new
     if cmd.is_a?(String)
       ## Single command, no arguments
+      cmd = [ [ cmd ] ]
+    elsif cmd.is_a?(Array) && !cmd[0].is_a?(Array)
+      ## Single command, possibly arguments
       cmd = [ cmd ]
     end
-    if cmd.is_a?(Array)
-      ## Either a single command with arguments
-      ## or multiple commands:
-      if cmd[0].is_a?(Array)
-        ## Array of arrays means multiple commands:
-        cmd.each do |c|
-          tk.send_request(true, c[0], c[1,c.length-1]) do |req, sentence|
-            replies.push(req.reply)
+
+    cmd.each do |c|
+      replycount = 1
+      tk.send_request(false, c[0], c[1,c.length-1]) do |req, sentence|
+        replycount += 1
+        if c[0] == '/tool/fetch'
+          if (
+            sentence.key?('status') &&
+            sentence['status'] == 'finished' &&
+            req.state != 'cancelled'
+          )
+            ## Cancel 'finished' fetch commands
+            req.cancel
           end
+        elsif replycount >= 1000 && req.state != 'cancelled'
+          ## Auto-cancel any command after 1,000 replies:
+          req.cancel
         end
-      else
-        ## Single command
-        tk.send_request(true, cmd[0], cmd[1,cmd.length-1]) do |req, sentence|
+        if sentence.key?('!done')
           replies.push(req.reply)
         end
       end
-    else
-      raise ArgumentError.new("invalid command argument")
     end
-    tk.wait_all
+
+    tk.wait_all ## Event loop -- wait for all commands
     tk.get_reply('/quit')
     tk.close
     return replies

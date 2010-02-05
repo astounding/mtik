@@ -1,9 +1,8 @@
-#!/usr/local/bin/ruby
+#!/usr/bin/env ruby
 ########################################################################
 #--
 #
 # FILE:     tikcli.rb -- Example of using the Ruby MikroTik API in Ruby
-# VERSION:  3.3.0
 #
 #++
 # Author::    Aaron D. Gifford - http://www.aarongifford.com/
@@ -36,6 +35,8 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 ########################################################################
+$LOAD_PATH.unshift(File.dirname(__FILE__)+'/../lib')
+
 require 'rubygems'
 require 'mtik'
 
