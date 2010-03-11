@@ -1,7 +1,9 @@
+require 'rubygems'
+require 'rake/gempackagetask'
 
-Gem::Specification.new do |spec|
+gemspec = Gem::Specification.new do |spec|
   spec.name         = 'mtik'
-  spec.version      = '3.0.2'
+  spec.version      = File.open('VERSION.txt','r').to_a.join.strip
   spec.date         = File.mtime('VERSION.txt')
   spec.author       = 'Aaron D. Gifford'
   spec.email        = 'email_not_accepted@aarongifford.com'
@@ -17,6 +19,7 @@ Gem::Specification.new do |spec|
     'LICENSE.txt',
     'README.txt',
     'VERSION.txt',
+    'Rakefile',
     'examples/tikcli.rb',
     'examples/tikcommand.rb',
     'examples/tikfetch.rb',
@@ -30,3 +33,11 @@ Gem::Specification.new do |spec|
     'lib/mtik/timeouterror.rb'
   ]
 end
+
+Rake::GemPackageTask.new(gemspec) do |pkg|
+  pkg.need_zip = true
+  pkg.need_tar = true
+end
+
+task :default => [ 'pkg/mtik-'  + File.open('VERSION.txt','r').to_a.join.strip + '.gem' ]
+
