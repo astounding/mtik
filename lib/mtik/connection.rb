@@ -75,13 +75,14 @@ class MTik::Connection
   end
   attr_reader :requests, :host, :port, :user, :pass, :conn_timeout, :cmd_timeout
 
-  ## Utility to pack a binary string as an ASCII hex string
-  ## (Ruby really needs pack method for the String class--like
-  ## "deadbeef".pack("H*")--then this would be unnecessary.)
-  def hexpack(str)
+  ## Internal utility function:
+  ## Sugar-coat ["0deadf0015"].pack('H*') so one can just do
+  ## "0deadf0015".hex2bin instead.  Prepend a '0' if the hex
+  ## string doesn't have an even number of digits.
+  def hex2bin(str)
     return str.length % 2 == 0 ?
-      [str].pack('H'+str.length.to_s) :
-      [str[0,1]].pack('h') + [str[1,str.length-1]].pack('H'+(str.length-1).to_s)
+      [str].pack('H*') :
+      ['0'+str].pack('H*')
   end
 
   ## Connect and login to the device using the API
@@ -99,7 +100,7 @@ class MTik::Connection
     end
 
     ## Grab the challenge from first (only) sentence in the reply:
-    challenge = hexpack(reply[0]['ret'])
+    challenge = hex2bin(reply[0]['ret'])
 
     ## Generate reply MD5 hash and convert binary hash to hex string:
     response  = Digest::MD5.hexdigest(0.chr + @pass + challenge)
@@ -171,7 +172,8 @@ class MTik::Connection
             return sentence
           else
             ## Add word to sentence
-            if m = /^=?([^=]+)=(.*)$/.match(word)
+            m = /^=?([^=]+)=(.*)$/.match(word)
+            unless m.nil?
               sentence[m[1]] = m[2]
             else
               sentence[word] = nil
