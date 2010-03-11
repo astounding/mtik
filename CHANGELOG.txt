@@ -1,3 +1,9 @@
+2010-03-11 (11 MAR 2010)  VERSION 3.0.3  Aaron D. Gifford (http://www.aarongifford.com)
+  * Bug fix to lib/mtik.rb command() method so when executing multiple commands
+    response array order matches command array order.
+  * Cosmetic change for hex encoding with a little simplification, and one very small
+    readability change in lib/mtik/connection.rb
+
 2010-02-05 (05 FEB 2010)  VERSION 3.0.2  Aaron D. Gifford (http://www.aarongifford.com)
   * Typo fixes to example tikfetch.rb
   * Multi-command functionality added to interactive client and to tikcommand.rb example
