@@ -211,7 +211,8 @@ module MTik
       cmd = [ cmd ]
     end
 
-    cmd.each do |c|
+    cmd.each_index do |i|
+      c = cmd[i]
       replycount = 1
       tk.send_request(false, c[0], c[1,c.length-1]) do |req, sentence|
         replycount += 1
@@ -229,7 +230,7 @@ module MTik
           req.cancel
         end
         if sentence.key?('!done')
-          replies.push(req.reply)
+          replies[i] = req.reply
         end
       end
     end
