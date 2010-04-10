@@ -100,7 +100,7 @@ module MTik
       cmd   = args.shift
       next if cmd == ''
       break if cmd == '/quit'
-      unless /^(?:\/[a-zA-Z0-9]+)+$/.match(cmd)
+      unless /^(?:\/[a-zA-Z0-9-]+)+$/.match(cmd)
         print "=== INVALID COMMAND: #{cmd}\n" if MTik::debug || MTik::verbose
         break
       end
