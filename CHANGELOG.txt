@@ -1,3 +1,7 @@
+2010-04-09 (09 APR 2010)  VERSION 3.0.4  Aaron D. Gifford (http://www.aarongifford.com)
+ * Bug fix to lib/mtik.rb thanks to Allan Eising to the command validation regular
+   expression to permit the '-' character in a command.  Thanks!
+
 2010-03-11 (11 MAR 2010)  VERSION 3.0.3  Aaron D. Gifford (http://www.aarongifford.com)
   * Bug fix to lib/mtik.rb command() method so when executing multiple commands
     response array order matches command array order.
