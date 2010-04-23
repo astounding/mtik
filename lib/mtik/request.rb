@@ -157,16 +157,20 @@ class MTik::Request < Array
 
   ## Utility method for packing an unsigned integer as
   ## a binary byte string of variable length
-  def self.bytepack(num)
+  def self.bytepack(num, size)
     s = String.new
-    if RUBY_VERSIION >= '1.9.0'
+    if RUBY_VERSION >= '1.9.0'
       s.force_encoding(Encoding::BINARY)
     end
     x = num < 0 ? -num : num  ## Treat as unsigned
-    while x > 0
-      s += (x & 0xff).chr
+    while size > 0
+      size -= 1
+      s = (x & 0xff).chr + s
       x >>= 8
     end
+    raise RuntimeError.new(
+      "Number #{num} is too large to fit in #{size} bytes."
+    ) if x > 0
     return s
   end
 
@@ -180,13 +184,13 @@ class MTik::Request < Array
     if str.length < 0x80
       return str.length.chr + str
     elsif str.length < 0x4000
-      return bytepack(str.length | 0x8000) + str
+      return bytepack(str.length | 0x8000, 2) + str
     elsif str.length < 0x200000
-      return bytepack(str.length | 0xc00000) + str
+      return bytepack(str.length | 0xc00000, 3) + str
     elsif str.length < 0x10000000
-      return bytepack(str.length | 0xe0000000) + str
+      return bytepack(str.length | 0xe0000000, 4) + str
     elsif str.length < 0x0100000000
-      return 0xf0.chr + bytepack(str.length) + str
+      return 0xf0.chr + bytepack(str.length, 5) + str
     else
       raise RuntimeError.new(
         "String is too long to be encoded for " +
