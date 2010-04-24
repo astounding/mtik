@@ -73,7 +73,7 @@ while ARGV.length > 0
     print ">>> ERROR: There is a file named '#{filename}' already on the device.\n"
   else
     print ">>> OK: Fetching file '#{filename}' from URL '#{url}'...\n"
-    mt.fetch(url, filename) do |status, total, bytes|
+    mt.fetch(url, filename, 120) do |status, total, bytes, req|
       case status
       when 'failed'
         print ">>> ERROR: File '#{filename}' download failed!\n"

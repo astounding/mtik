@@ -43,7 +43,7 @@ For documentation on the MikroTik RouterOS APi, see
 
 To install MTik is through its GEM file:
 
-  % [sudo] gem install mtik-3.3.0.gem
+  % [sudo] gem install mtik-3.1.0.gem
 
 == License
 

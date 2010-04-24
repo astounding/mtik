@@ -32,6 +32,6 @@
 ## THE POSSIBILITY OF SUCH DAMAGE.
 ############################################################################
 
-## Execption raised when a '!fatal' response is received from a device
+## Execption raised when a <i>"!fatal"</i> response is received from a device
 class MTik::FatalError < MTik::Error ; end
 

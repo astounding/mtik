@@ -188,10 +188,12 @@ module MTik
   ## more commands, retrieve the response(s), close the connection,
   ## and return the response(s).
   ##
-  ## *WARNING* :: If you use this call with an API command like
-  ## +/tool/fetch+ it will forever keep reading replies, never
-  ## returning.  So do _NOT_ use this with any API command that does
-  ## not complete with a "!done" with no additional interaction.
+  ## *WARNING*:
+  ## If you use this call with an API command like <i>"/tool/fetch"</i>
+  ## or a similar command that generates replies until canceled,
+  ## it will forever keep reading replies, never returning.  So do
+  ## _NOT_ use this with any API command that does not complete with
+  ## a <i>"!done"</i> response without any additional interaction.
   def self.command(args)
     tk = MTik::Connection.new(
       :host => args[:host],

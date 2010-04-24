@@ -1,3 +1,17 @@
+2010-04-23 (23 APR 2010)  VERSION 3.1.0  Aaron D. Gifford (http://www.aarongifford.com)
+ * Added find_sentences() method to MTik::Reply -- just sugar to Array.select()
+ * Changed MTik::Connection.fetch() method to add an optional timeout parameter
+   which should not affect the API and should be backward compatible.  By default,
+   there is no inactivity timeout for downloads.  But if you set the timeout parameter
+   to a positive number, when a reply arrives and no progress/activity has been
+   made for timeout seconds, the command will be cancelled.  This should help with
+   stalled downloads (i.e. the remote side has stopped sending but the TCP connection
+   remains open/active).
+ * Also add the MTik::Request object as a parameter to the MTik::Connection.fetch()
+   method's callback so that a script could use the request object to cancel the
+   command if needed.  Due to this change, I decided to bump the version to 3.1.0.
+ * Fixed RDoc formatting in several files, and added an RDocTask to the Rakefile
+
 2010-04-23 (23 APR 2010)  VERSION 3.0.5  Aaron D. Gifford (http://www.aarongifford.com)
  * Double bug-fix (typo fix and logic fix) to request.rb thanks to Allan Eising and 
    Søren Daugaard.  Thank you both for the patch!

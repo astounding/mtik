@@ -43,16 +43,16 @@ class MTik::Connection
   ## key/value pair style arguments must be specified. The one
   ## required argument is the host or IP of the device to connect
   ## to.
-  ##  _host_ :: This is the only _required_ argument. Example:
-  ##            + :host => "rb411.example.org" +
-  ##  _port_ :: Override the default API port (8728)
-  ##  _user_ :: Override the default API username ('admin')
-  ##  _pass_ :: Override the default API password (blank)
-  ##  _conn_timeout_ :: Override the default connection
-  ##                    timeout (60 seconds) -- *NOT USED*
-  ##  _cmd_timeout_ ::  Override the default command timeout
-  ##                    (60 seconds) -- the number of seconds
-  ##                    to wait for additional API input.
+  ## +host+:: This is the only _required_ argument. Example:
+  ##          <i> :host => "rb411.example.org" </i>
+  ## +port+:: Override the default API port (8728)
+  ## +user+:: Override the default API username ('admin')
+  ## +pass+:: Override the default API password (blank)
+  ## +conn_timeout+:: Override the default connection
+  ##                  timeout (60 seconds) -- *NOT USED*
+  ## +cmd_timeout+::  Override the default command timeout
+  ##                  (60 seconds) -- the number of seconds
+  ##                  to wait for additional API input.
   def initialize(args)
     @sock         = nil
     @requests     = Hash.new
@@ -321,18 +321,18 @@ class MTik::Connection
   end
 
   ## Send a request to the device.
-  ##   +await_completion+ ::  Boolean indicating whether to execute callbacks
-  ##                          only once upon request completion (if set to _true_)
-  ##                          or to execute for every received complete sentence
-  ##                          (if set to _false_).  ALTERNATIVELY, this parameter
-  ##                          may be an object (MTik::Request) to be sent, in which
-  ##                          case any command and/or arguments will be treated as
-  ##                          additional arguments to the request contained in the
-  ##                          object.
-  ##   +command+ ::           The command to be executed.
-  ##   +args+ ::              Zero or more arguments to the command
-  ##   +callback+ ::          Proc/lambda code (or code block if not provided as
-  ##                          an argument) to be called.  (See the +await_completion+
+  ## +await_completion+::  Boolean indicating whether to execute callbacks
+  ##                       only once upon request completion (if set to _true_)
+  ##                       or to execute for every received complete sentence
+  ##                       (if set to _false_).  ALTERNATIVELY, this parameter
+  ##                       may be an object (MTik::Request) to be sent, in which
+  ##                       case any command and/or arguments will be treated as
+  ##                       additional arguments to the request contained in the
+  ##                       object.
+  ## +command+::           The command to be executed.
+  ## +args+::              Zero or more arguments to the command
+  ## +callback+::          Proc/lambda code (or code block if not provided as
+  ##                       an argument) to be called.  (See the +await_completion+
   ##                    
   def send_request(await_completion, command, *args, &callback)
     if await_completion.is_a?(MTik::Request)
@@ -367,18 +367,19 @@ class MTik::Connection
 
   ## Send a command, then wait for the command to complete, then return
   ## the completed reply.
-  ## _NOTE_ :: This call has its own event loop that will cycle
-  ##           until the command in question completes.  You
-  ##           should:
-  ##             * NOT call get_reply with a command that may not
-  ##               complete with a "!done" response on its own
-  ##               (with no additional intervention); and
-  ##             * BE CAREFUL to understand how things interact if
-  ##               you mix this call with requests that generate
-  ##               continuous output.
-  ## +command+ ::  The command to execute
-  ## +args+ ::     Arguments (if any)
-  ## +callback+ :: Proc/lambda or code block to act as callback
+  ##
+  ## +command+::  The command to execute
+  ## +args+::     Arguments (if any)
+  ## +callback+:: Proc/lambda or code block to act as callback
+  ##
+  ## *NOTE*: This call has its own event loop that will cycle until
+  ## the command in question completes. You should:
+  ## * NOT call get_reply with a command that may not
+  ##   complete with a "!done" response on its own
+  ##   (with no additional intervention); and
+  ## * BE CAREFUL to understand how things interact if
+  ##   you mix this call with requests that generate
+  ##   continuous output.
   def get_reply(command, *args, &callback)
     req = send_request(true, command, *args, &callback)
     wait_for_request(req)
@@ -483,20 +484,29 @@ class MTik::Connection
   ## Utility to execute the "/tool/fetch" command, instructing
   ## the device to download a file from the specified URL.
   ## Status updates are provided via the provided callback.
-  ##   _url_ ::      The URL to fetch the file from
-  ##   _filename_ :: The filename to use on the device
-  ##   _callback_ :: Callback called for status updates. The three
-  ##                 arguments passed to the callback are:
-  ##                   _status_ :: Either 'downloading', 'connecting',
-  ##                               'failed', 'requesting', or 'finished',
-  ##                               otherwise a '!trap' error occured,
-  ##                               and the value is the trap message.
-  ##                   _total_ ::  Final expected file size in bytes
-  ##                   _bytes_ ::  Number of bytes transferred so far
-  def fetch(url, filename, &callback)
-    total  = bytes = 0
+  ## +url+::      The URL to fetch the file from
+  ## +filename+:: The filename to use on the device
+  ## +timeout+::  Cancel command if a reply indicates the
+  ##              download has stalled for +timeout+ seconds.
+  ##              This is disabled by default. Disable by
+  ##              setting +timeout+ to nil or zero, enable by
+  ##              supplying a positive number of seconds.
+  ##              (OPTIONAL argument)
+  ## +callback+:: Callback called for status updates.
+  ##
+  ## The arguments passed to the callback are:
+  ## +status+::   Either 'downloading', 'connecting',
+  ##              'failed', 'requesting', or 'finished',
+  ##              otherwise a '!trap' error occured,
+  ##              and the value is the trap message.
+  ## +total+::    Final expected file size in bytes
+  ## +bytes+::    Number of bytes transferred so far
+  ## +request+::  The MTik::Request object
+  def fetch(url, filename, timeout=nil, &callback)
+    total  = bytes = oldbytes = 0
     status = ''
     done   = false
+    lastactivity = Time.now
     req = get_reply_each(
       '/tool/fetch',
       '=url=' + url,
@@ -511,12 +521,18 @@ class MTik::Connection
         when 'downloading'
           total = s['total'].to_i
           bytes = s['downloaded'].to_i
-          callback.call(status, total, bytes)
+          if bytes != oldbytes
+            lastactivity = Time.now
+          elsif timeout != 0 && !timeout.nil? && Time.now - lastactivity > timeout
+            ## Cancel the request (idle too long):
+            get_reply('/cancel', '=tag=' + req.tag) {}
+          end
+          callback.call(status, total, bytes, req)
         when 'connecting', 'requesting'
-          callback.call(status, 0, 0)
+          callback.call(status, 0, 0, req)
         when 'failed', 'finished'
           bytes = total if status == 'finished'
-          callback.call(status, total, bytes)
+          callback.call(status, total, bytes, req)
           done = true
           ## Now terminate the download request (since it's done):
           get_reply('/cancel', '=tag=' + req.tag) {}
@@ -526,7 +542,7 @@ class MTik::Connection
       elsif s.key?('!trap')
         ## Pass trap message back (unless finished--in which case we
         ## ignore the 'interrrupted' trap message):
-        callback.call(s['message'], total, bytes) if !done
+        callback.call(s['message'], total, bytes, req) if !done
       end
     end
   end

@@ -35,33 +35,34 @@
 ## A MikroTik API request object is stored as an array of MikroTik
 ## API-style words, the first word being the command, subsequent words
 ## (if any) are command arguments.  Each request will automatically
-## have a unique tag generated (so any +.tag=value+ arguments will be
-## ignored). A request is incomplete until the final +!done+ response
-## sentence has been received.
+## have a unique tag generated (so any <i>".tag=value"</i> arguments
+## will be ignored). A request is incomplete until the final
+## <i>"!done"</i> response sentence has been received.
 class MTik::Request < Array
   @@tagspace = 0  ## Used to keep all tags unique.
 
   ## Create a new MTik::Request.
-  ## +await_completion+ :: A boolean parameter indicating when callback(s)
-  ##                    should be called.  A value of _true_ will result
-  ##                    in callback(s) only being called once, when the
-  ##                    final +!done+ response is received.  A value of
-  ##                    _false_ means callback(s) will be called _each_
-  ##                    time a response sentence is received.
-  ## +command+ ::       The MikroTik API command to execute (a String).
-  ##                    Examples:
-  ##                      * +"/interface/getall"+
-  ##                      * +"/ip/route/add"+
-  ## +args+ ::          Zero or more String arguments for the command,
-  ##                    already encoded in +"=key=value"+, +".id=value"+
-  ##                    or +"?query"+ API format.
-  ## +callback+::       A Proc or code block may be passed which will
-  ##                    be called with two arguments:
-  ##                     1. this MTik::Request object; and
-  ##                     2. the most recently received response sentence.
-  ##                    When or how often callbacks are called depends on
-  ##                    whether the +await_completion+ parameter is _true_
-  ##                    or _false_ (see above).
+  ## +await_completion+:: A boolean parameter indicating when callback(s)
+  ##                      should be called.  A value of _true_ will result
+  ##                      in callback(s) only being called once, when the
+  ##                      final +!done+ response is received.  A value of
+  ##                      _false_ means callback(s) will be called _each_
+  ##                      time a response sentence is received.
+  ## +command+::          The MikroTik API command to execute (a String).
+  ##                      Examples:
+  ##                        "/interface/getall"
+  ##                        "/ip/route/add"
+  ## +args+::             Zero or more String arguments for the command,
+  ##                      already encoded in <i>"=key=value"</i>,
+  ##                      <i>".id=value"</i>, or <i>"?query"</i> API
+  ##                      format.
+  ## +callback+::         A Proc or code block may be passed which will
+  ##                      be called with two arguments:
+  ##                      1. this MTik::Request object; and
+  ##                      2. the most recently received response sentence.
+  ##                      When or how often callbacks are called depends on
+  ##                      whether the +await_completion+ parameter is _true_
+  ##                      or _false_ (see above).
   def initialize(await_completion, command, *args, &callback)
     @reply            = MTik::Reply.new
     @command          = command
@@ -175,7 +176,7 @@ class MTik::Request < Array
   end
 
   ## Another utility method to encode a byte string as a
-  ## valid API _"word"_
+  ## valid API <i>"word"</i>
   def self.to_tikword(str)
     str = str.dup
     if RUBY_VERSION >= '1.9.0'
@@ -260,7 +261,7 @@ class MTik::Request < Array
   end
 
   ## Method the internal parser calls to flag this reply as completed
-  ## upon receipt of a +!done+ reply sentence.
+  ## upon receipt of a <i>"!done"</i> reply sentence.
   def done!
     @state = 'complete'
     return true

@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'rake/gempackagetask'
+require 'rake/rdoctask'
 
 gemspec = Gem::Specification.new do |spec|
   spec.name         = 'mtik'
@@ -39,5 +40,15 @@ Rake::GemPackageTask.new(gemspec) do |pkg|
   pkg.need_tar = true
 end
 
-task :default => [ 'pkg/mtik-'  + File.open('VERSION.txt','r').to_a.join.strip + '.gem' ]
+Rake::RDocTask.new do |rdoc|
+  rdoc.name     = 'rdoc'
+  rdoc.main     = 'README.txt'
+  rdoc.rdoc_dir = 'doc'
+  rdoc.rdoc_files.include('README.txt', 'LICENSE.txt', 'CHANGELOG.txt', 'lib/**/*.rb')
+end
+
+task :default => [
+  'pkg/mtik-' + File.open('VERSION.txt','r').to_a.join.strip + '.gem',
+  :rdoc
+]
 

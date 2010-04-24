@@ -34,17 +34,23 @@
 
 ## A MikroTik API reply is stored as an array of response sentences. Each
 ## sentence is a key/value Hash object. The MTik::Reply class is simply
-## a basic Ruby Array with a find_sentence method added.
+## a basic Ruby Array with find_sentence and find_sentences methods added.
 class MTik::Reply < Array
+  ## This method is nearly identical to Array.select{|i| i.key?(key)}[0]
+  ## except that this method short-circuits and returns when the first
+  ## match is found.
   def find_sentence(key)
-    i = 0
-    while i < self.length
-      if self[i].key?(key)
-        return self[i]
-      end
-      i += 1
+    self.each do |sentence|
+      return sentence if sentence.key?(key)
     end
     return nil
+  end
+
+  ## This method is simply an alias for Array.select{|i| i.key?(key)}
+  def find_sentences(key)
+    return self.select do |sentence|
+      sentence.key?(key)
+    end
   end
 end
 
