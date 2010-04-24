@@ -1,4 +1,4 @@
-2010-04-23 (23 APR 2010)  VERSION 3.1.0  Aaron D. Gifford (http://www.aarongifford.com)
+2010-04-24 (24 APR 2010)  VERSION 3.1.0  Aaron D. Gifford (http://www.aarongifford.com)
  * Added find_sentences() method to MTik::Reply -- just sugar to Array.select()
  * Changed MTik::Connection.fetch() method to add an optional timeout parameter
    which should not affect the API and should be backward compatible.  By default,
