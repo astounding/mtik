@@ -34,6 +34,10 @@ Additional documentation is available at
 * http://www.aarongifford.com/computers/mtik/
 * http://wiki.mikrotik.com/wiki/API_Ruby_class
 
+Source code is available on GitHub:
+
+* http://www.github.com/astounding/mtik/
+
 For documentation on the MikroTik RouterOS APi, see
 
 * http://wiki.mikrotik.com/wiki/API
@@ -53,8 +57,13 @@ under a BSD-style license.  (See the LICENSE.txt file.)
 
 == Report Bugs
 
-Please report bugs by going to the author's web site and clicking on the
-"Contact Me" link in the left-hand menu.  The direct URL is:
+Bugs/issues may also be reported via GitHub:
+
+* http://www.github.com/astounding/mtik/issues/
+
+ALSO, please send the author a note regarding the issue by clicking on the
+"Contact Me" link in the left-hand menu of the author's web site.
+The direct URL is:
 
 * http://www.aarongifford.com/leaveanote.html
 

@@ -44,8 +44,8 @@ require 'mtik'
 ## output of all API interactions:
 #MTik::verbose = true
 
-if ARGV.length < 5 || ARGV.length % 2 != 1
-  print "Usage: #{$0} <device> <user> <pass> <url> <localfilename> [<url> <localfilename>...]\n"
+if ARGV.length < 4
+  print "Usage: #{$0} <device> <user> <pass> <url> [<localfilename> [<url> [<localfilename> ... ]]]\n"
   exit
 end
 
@@ -55,7 +55,7 @@ pass = ARGV.shift
 begin
   mt = MTik::Connection.new(:host=>host, :user=>user, :pass=>pass)
 rescue Errno::ETIMEDOUT, Errno::ENETUNREACH, Errno::EHOSTUNREACH, MTik::Error => e
-  print ">>> ERROR CONNECTING: #{e}"
+  print ">>> ERROR CONNECTING: #{e}\n"
   exit
 end
 
@@ -68,27 +68,55 @@ mt.get_reply_each('/file/getall') do |req, s|
 end
 
 while ARGV.length > 0
-  url, filename = ARGV.shift, ARGV.shift
+  url = ARGV.shift
+  if ARGV.length > 0
+    filename = ARGV.shift
+  else
+    filename = File.basename(url)
+  end
   if files.key?(filename)
     print ">>> ERROR: There is a file named '#{filename}' already on the device.\n"
   else
     print ">>> OK: Fetching file '#{filename}' from URL '#{url}'...\n"
+    oldbytes = 0
+    totalbytes = nil
+    oldtime  = starttime = Time.now
     mt.fetch(url, filename, 120) do |status, total, bytes, req|
+      now = Time.now
       case status
+      when 'connecting'
+        starttime = now
+        print ">>> OK: Connecting to '#{url}' to download file '#{filename}'\n"
+      when 'requesting'
+        starttime = now
+        print ">> OK: Connected.  Sending request for '#{filename}'...\n"
+      when 'downloading'
+        # Unfortunately, the 'total' parameter is only valid for a
+        # 'downloading' status update, so we save the value.
+        totalbytes = total if totalbytes.nil?
+        print (
+          ">>> OK: Downloaded #{bytes} KB of #{total} KB " +
+          '(%0.2f KBps, %0.2f avgKBps) of ' +
+          "'#{filename}' " +
+          (total > 0 ? '%0.2f' % (100.0*bytes/total) : '0') +
+          '%%' + (oldbytes == bytes ? ' *STALLED*' : '') +  "\n"
+        ) % [(bytes-oldbytes)/(now-oldtime), bytes/(now-starttime)]
+        oldbytes = bytes
+      when 'finished'
+        unless totalbytes.nil?
+          print (
+            ">>> OK: Downloaded #{totalbytes} KB of #{totalbytes} KB " +
+            '(%0.2f KBps, %0.2f avgKBps) of ' +
+            "'#{filename}' 100.00%%\n"
+          ) % [(totalbytes-oldbytes)/(now-oldtime), totalbytes/(now-starttime)]
+        end
+        print ">>> OK: File '#{filename}' download finished in #{'%0.2f' % [now-starttime]} seconds.\n"
       when 'failed'
         print ">>> ERROR: File '#{filename}' download failed!\n"
-      when 'finished'
-        print ">>> OK: File '#{filename}' download finished.\n"
-      when 'connecting'
-        print ">>> OK: Connecting to '#{url}' to download file '#{filename}'\n"
-      when 'downloading'
-        print ">>> OK: Downloaded #{bytes} bytes of #{total} of file " +
-              "'#{filename}' " +
-              (total > 0 ? '%0.2f' % (100.0*bytes/total) : '0') +
-              "%\n"
       else
         print ">>> ERROR: The following trap error occured: #{status}\n"
       end
+      oldtime  = now
     end
   end
 end
