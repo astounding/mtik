@@ -2,7 +2,7 @@
 ## A Ruby library implementing the Ruby MikroTik API
 ############################################################################
 ## Author::    Aaron D. Gifford - http://www.aarongifford.com/
-## Copyright:: Copyright (c) 2009-2010, InfoWest, Inc.
+## Copyright:: Copyright (c) 2009-2011, InfoWest, Inc.
 ## License::   BSD license
 ##
 ## Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,7 @@
 ## ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 ## THE POSSIBILITY OF SUCH DAMAGE.
 ############################################################################
+# encoding: ASCII-8BIT
 
 ## A MikroTik API request object is stored as an array of MikroTik
 ## API-style words, the first word being the command, subsequent words
@@ -67,7 +68,7 @@ class MTik::Request < Array
     @reply            = MTik::Reply.new
     @command          = command
     @await_completion = await_completion
-    @state            = 'new'  ## 'new', 'sent', 'cancelled', 'complete'
+    @state            = :new  ## :new, :sent, :canceled, :complete
     @conn             = nil
 
     args.flatten!
@@ -134,7 +135,7 @@ class MTik::Request < Array
   ## Return the boolean completion status of the request,
   ## _true_ if complete, _false_ if not-yet-complete.
   def done?
-    return @state == 'complete'
+    return @state == :complete
   end
 
   attr_reader :command, :tag, :await_completion, :reply, :state
@@ -232,39 +233,42 @@ class MTik::Request < Array
         "is not yet associated with an MTik::Connection object."
       )
     end
-    @state = 'sent'
+    @state = :sent
     return @conn.xmit(self)
   end
 
   ## Cancel a 'sent' request:
   def cancel(&callback)
-    if @state != 'sent'
+    if @state != :sent
       raise MTik::Error.new(
         "Method MTik::Request#cancel() called with state '#{@state}' " +
         "(should only call when state is 'sent')"
       )
     end
     @conn.send_request(true, '/cancel', '=tag=' + @tag, &callback)
-    @state = 'cancelled'
+    @state = :canceled
   end
 
   ## Cancel a 'sent' request:
   def cancel_each(&callback)
-    if @state != 'sent'
+    if @state != :sent
       raise MTik::Error.new(
         "Method MTik::Request#cancel() called with state '#{@state}' " +
         "(should only call when state is 'sent')"
       )
     end
     @conn.send_request(false, '/cancel', '=tag=' + @tag, &callback)
-    @state = 'cancelled'
+    @state = :canceled
   end
 
   ## Method the internal parser calls to flag this reply as completed
-  ## upon receipt of a <i>"!done"</i> reply sentence.
+  ## upon receipt of a <i>"!done"</i> reply sentence.  WARNING: If you
+  ## call this manually and another sentence arrives, an exception
+  ## will be raised!
   def done!
-    @state = 'complete'
+    @state = :complete
     return true
   end
+
 end
 

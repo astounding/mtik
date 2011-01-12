@@ -2,7 +2,7 @@
 ## A Ruby library implementing the Ruby MikroTik API
 ############################################################################
 ## Author::    Aaron D. Gifford - http://www.aarongifford.com/
-## Copyright:: Copyright (c) 2009-2010, InfoWest, Inc.
+## Copyright:: Copyright (c) 2009-2011, InfoWest, Inc.
 ## License::   BSD license
 ##
 ## Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,7 @@
 ## ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 ## THE POSSIBILITY OF SUCH DAMAGE.
 ############################################################################
+# encoding: ASCII-8BIT
 
 ## The MTik::Connection class is the workhorse where most stuff gets done.
 ## Create an instance of this object to connect to a MikroTik device via
@@ -336,10 +337,10 @@ class MTik::Connection
   ##                    
   def send_request(await_completion, command, *args, &callback)
     if await_completion.is_a?(MTik::Request)
+      req = await_completion
       if req.done?
         raise MTik::Error.new("Cannot MTik#send_request() with an already-completed MTik::Request object.")
       end
-      req = await_completion
       req.addarg(command)
       req.addargs(*args)
     else
@@ -511,7 +512,7 @@ class MTik::Connection
       '/tool/fetch',
       '=url=' + url,
       '=dst-path=' + filename
-    ) do |req, s|
+    ) do |r, s|
       if s.key?('!re') && !done
         unless s.key?('status')
           raise MTik::Error.new("Unknown response to '/tool/fetch': missing 'status' in response.")
@@ -525,24 +526,24 @@ class MTik::Connection
             lastactivity = Time.now
           elsif timeout != 0 && !timeout.nil? && Time.now - lastactivity > timeout
             ## Cancel the request (idle too long):
-            get_reply('/cancel', '=tag=' + req.tag) {}
+            get_reply('/cancel', '=tag=' + r.tag) {}
           end
-          callback.call(status, total, bytes, req)
+          callback.call(status, total, bytes, r)
         when 'connecting', 'requesting'
-          callback.call(status, 0, 0, req)
+          callback.call(status, 0, 0, r)
         when 'failed', 'finished'
           bytes = total if status == 'finished'
-          callback.call(status, total, bytes, req)
+          callback.call(status, total, bytes, r)
           done = true
           ## Now terminate the download request (since it's done):
-          get_reply('/cancel', '=tag=' + req.tag) {}
+          get_reply('/cancel', '=tag=' + r.tag) {}
         else
           raise MTik::Error.new("Unknown status in '/tool/fetch' response: '#{status}'")
         end
       elsif s.key?('!trap')
         ## Pass trap message back (unless finished--in which case we
         ## ignore the 'interrrupted' trap message):
-        callback.call(s['message'], total, bytes, req) if !done
+        callback.call(s['message'], total, bytes, r) if !done
       end
     end
   end
@@ -605,8 +606,8 @@ class MTik::Connection
           if s.key?(key)
             ## A key matches! && s[k] != v
             oldv = s[k]
-            get_reply(cmdpath + '/set', '='+k+'='+v) do |req, s|
-              trap = req.reply.find_sentence('!trap')
+            get_reply(cmdpath + '/set', '='+k+'='+v) do |r, sn|
+              trap = r.reply.find_sentence('!trap')
               unless trap.nil?
                 raise MTik::Error.new("Trap while executing '#{cmdpath}/set =#{k}=#{v}': #{trap['message']}")
               end

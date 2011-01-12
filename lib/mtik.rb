@@ -2,7 +2,7 @@
 ## A Ruby library implementing the Ruby MikroTik API
 ############################################################################
 ## Author::    Aaron D. Gifford - http://www.aarongifford.com/
-## Copyright:: Copyright (c) 2009-2010, InfoWest, Inc.
+## Copyright:: Copyright (c) 2009-2011, InfoWest, Inc.
 ## License::   BSD license
 ##
 ## Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,8 @@
 ## ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 ## THE POSSIBILITY OF SUCH DAMAGE.
 ############################################################################
+# encoding: ASCII-8BIT
+
 module MTik
   require 'mtik/error.rb'
   require 'mtik/fatalerror.rb'
@@ -122,7 +124,7 @@ module MTik
               cmd == '/tool/fetch' && sentence.key?('status') && sentence['status'] == 'finished'
             ) || (maxreply > 0 && count == maxreply)
               state = 2
-              req.cancel do |req, sentence|  
+              req.cancel do |r, s|  
                 state = 1
               end
             end

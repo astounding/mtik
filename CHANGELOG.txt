@@ -1,3 +1,17 @@
+2011-01-11 (11 JAN 2011)  VERSION 3.1.2  Aaron D. Gifford (http://www.aarongifford.com)
+ * Added source file encoding comments and updated the copyright notices
+ * Fixed a tiny bug in lib/mtik/connection.rb
+ * Changed MTik::Request@state member in lib/mtik/request.rb to Symbol instead of String
+ * Moved tikfetch.rb, tikcli.rb, and tikcommand.rb from examples/ to bin/ and removed
+   the .rb suffix -- left tikjson.rb behind in examples/
+ * Renamed a few variables that, with warnings enabled, Ruby complained were overlapping
+   or hiding outer variables of the same name to avoid the warning.
+
+2010-12-30 (30 DEC 2011)  VERSION 3.1.1  Aaron D. Gifford (http://www.aarongifford.com)
+ * Changed the tikfetch.rb utility so it no longer requires a destination filename
+   by default--it will use the supplied URL's final path element as a filename.  Also
+   updated the stats output a bit.
+
 2010-04-24 (24 APR 2010)  VERSION 3.1.0  Aaron D. Gifford (http://www.aarongifford.com)
  * Added find_sentences() method to MTik::Reply -- just sugar to Array.select()
  * Changed MTik::Connection.fetch() method to add an optional timeout parameter

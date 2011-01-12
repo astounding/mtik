@@ -2,7 +2,7 @@
 ## A Ruby library implementing the Ruby MikroTik API
 ############################################################################
 ## Author::    Aaron D. Gifford - http://www.aarongifford.com/
-## Copyright:: Copyright (c) 2009-2010, InfoWest, Inc.
+## Copyright:: Copyright (c) 2009-2011, InfoWest, Inc.
 ## License::   BSD license
 ##
 ## Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,7 @@
 ## ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 ## THE POSSIBILITY OF SUCH DAMAGE.
 ############################################################################
+# encoding: ASCII-8BIT
 
 ## Execption raised when a <i>"!fatal"</i> response is received from a device
 class MTik::FatalError < MTik::Error ; end

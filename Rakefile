@@ -11,7 +11,6 @@ gemspec = Gem::Specification.new do |spec|
   spec.homepage     = 'http://www.aarongifford.com/computers/mtik/'
   spec.summary      = 'MTik implements the MikroTik RouterOS API for use in Ruby.'
   spec.description  = 'MTik implements the MikroTik RouterOS API for use in Ruby.'
-  spec.has_rdoc     = true ## Only partially true currently
   spec.rubyforge_project = 'mtik'
   spec.extra_rdoc_files  = [ 'README.txt' ]
   spec.require_paths     = [ 'lib' ]
@@ -21,10 +20,10 @@ gemspec = Gem::Specification.new do |spec|
     'README.txt',
     'VERSION.txt',
     'Rakefile',
-    'examples/tikcli.rb',
-    'examples/tikcommand.rb',
-    'examples/tikfetch.rb',
     'examples/tikjson.rb',
+    'bin/tikcli',
+    'bin/tikcommand',
+    'bin/tikfetch',
     'lib/mtik.rb',
     'lib/mtik/connection.rb',
     'lib/mtik/error.rb',
@@ -33,6 +32,7 @@ gemspec = Gem::Specification.new do |spec|
     'lib/mtik/request.rb',
     'lib/mtik/timeouterror.rb'
   ]
+  spec.executables = [ 'tikcli', 'tikcommand', 'tikfetch' ]
 end
 
 Rake::GemPackageTask.new(gemspec) do |pkg|
