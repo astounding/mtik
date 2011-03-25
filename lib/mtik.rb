@@ -53,6 +53,9 @@ module MTik
   ## API data when expecting one or more command responses.
   CMD_TIMEOUT  = 60
 
+  ## Maximum number of replies before a command is auto-canceled:
+  MAXREPLIES   = 1000
+
   @verbose = false
   @debug   = false
 
@@ -120,8 +123,8 @@ module MTik
             ## Auto-cancel any '/tool/fetch' commands that have finished,
             ## or commands that have received the specified number of
             ## replies:
-            if req.state != 'cancelled' && (
-              cmd == '/tool/fetch' && sentence.key?('status') && sentence['status'] == 'finished'
+            if req.state == :sent && (
+              cmd == '/tool/fetch' && sentence['status'] == 'finished'
             ) || (maxreply > 0 && count == maxreply)
               state = 2
               req.cancel do |r, s|  
@@ -190,12 +193,52 @@ module MTik
   ## more commands, retrieve the response(s), close the connection,
   ## and return the response(s).
   ##
-  ## *WARNING*:
-  ## If you use this call with an API command like <i>"/tool/fetch"</i>
-  ## or a similar command that generates replies until canceled,
-  ## it will forever keep reading replies, never returning.  So do
-  ## _NOT_ use this with any API command that does not complete with
-  ## a <i>"!done"</i> response without any additional interaction.
+  ## PARAMETERS:
+  ##   All parameters supplied to this method are contained in a
+  ##   single hash.  Here are available hash keys:
+  ##
+  ##     :host    => the host name or IP to connect to
+  ##     :user    => the API user ID to authenticate with
+  ##     :pass    => the API password to authenticate with
+  ##     :command => one or more API commands to execute
+  ##     :limit   => an OPTIONAL integer reply limit
+  ##
+  ## The :command parameter may be:
+  ##   * A single string representing a single API command to execute
+  ##   * An array of strings in which case the first string is the API
+  ##     command to execute and each subsequent array item is an API
+  ##     parameter or argument.
+  ##   * An array of arrays -- Multiple API command may be executed
+  ##     in sequence.  Each subarray is an array of strings containing
+  ##     an API command and zero or more parameters.
+  ##
+  ## The :limit parameter if present specifies an integer.  This parameter
+  ## is to be used whenever executing one or more API commands that do
+  ## not terminate with a '!done' response sentence, but instead keep
+  ## sending '!re' reply sentences.
+  ##
+  ## An exception is the '/tools/fetch' API command, which this method
+  ## will auto-cancel when it finishes.
+  ##
+  ## Regarding the :limit parameter:
+  ##  * If present and the integer is zero or negative, THERE WILL BE
+  ##    NO LIMIT ENFORCED on the number of replies from each API command.
+  ##    *WARNING:* If you do NOT limit the number of replies when
+  ##    executing an API command like <i>"/interface/montitor-traffic"</i>
+  ##    this method may not ever terminate and may consume memory
+  ##    buffering replies until resources are exhausted.
+  ##  * If present and a positive integer, each API command may at
+  ##    most receive the specified number of reply sentences, after which
+  ##    the command will automatically be canceled.  This is useful
+  ##    to terminate commands that would otherwise keep sending output
+  ##    forever.
+  ##  * If NOT present, or if nil, the default reply limit as contained
+  ##    in the MAXREPLIES constant will be enforced. *WARNING:* This
+  ##    default limit could be so large that this method would not
+  ##    return for a long time, waiting for the number of replies.
+  ##
+  ## Remember that the limit applies separately to each API command
+  ## executed.
   def self.command(args)
     tk = MTik::Connection.new(
       :host => args[:host],
@@ -205,6 +248,7 @@ module MTik
       :conn_timeout => args[:conn_timeout],
       :cmd_timeout  => args[:cmd_timeout]
     )
+    limit = args[:limit]  ## Optional reply limit
     cmd = args[:command]
     replies = Array.new
     if cmd.is_a?(String)
@@ -217,20 +261,18 @@ module MTik
 
     cmd.each_index do |i|
       c = cmd[i]
-      replycount = 1
+      replycount = 0
       tk.send_request(false, c[0], c[1,c.length-1]) do |req, sentence|
         replycount += 1
         if c[0] == '/tool/fetch'
-          if (
-            sentence.key?('status') &&
-            sentence['status'] == 'finished' &&
-            req.state != 'cancelled'
-          )
+          if sentence['status'] == 'finished' && req.state == :sent
             ## Cancel 'finished' fetch commands
             req.cancel
           end
-        elsif replycount >= 1000 && req.state != 'cancelled'
-          ## Auto-cancel any command after 1,000 replies:
+        elsif req.state == :sent && (
+          limit.nil? ? (replycount >= MAXREPLIES) : (limit > 0 && replycount >= limit)
+        )
+          ## Auto-cancel any command after the maximum number of replies:
           req.cancel
         end
         if sentence.key?('!done')
@@ -239,7 +281,7 @@ module MTik
       end
     end
 
-    tk.wait_all ## Event loop -- wait for all commands
+    tk.wait_all ## Event loop -- wait for all commands to finish
     tk.get_reply('/quit')
     tk.close
     return replies
