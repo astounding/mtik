@@ -1,3 +1,18 @@
+2011-03-25 (25 JAN 2011)  VERSION 4.0.0  Aaron D. Gifford (http://www.aarongifford.com)
+ * Per user suggestion, added a new optional cancel parameter to the MTik#command()
+   method that will auto-cancel the supplied command after receiving the specified
+   number of '!re' reply sentences.  This is usful for executing a command that otherwise
+   will not terminate, but will keep sending output perpetually if not canceled.
+ * Spelling changes: :cancelled updated to :canceled   This means anyone who checked the
+   state of a request using :cancelled or 'cancelled' will need to update their code to
+   check for :canceled instead.
+ * Due to changing of spelling and adding a new parameter, I've bumped the major version
+   number to 4.x in case any users code might break.  This in spite of the fact that
+   there are no major new features added.
+ * I found 2-3 tiny bugs left over from the past change of request state from string
+   to symbol and fixed those, updated error messages to reflect state as a symbol,
+   eliminated a few redundant key?() calls, and fixed a replycounter initialization
+   typo (had set it to 1 instead of 0).
 2011-01-11 (11 JAN 2011)  VERSION 3.1.2  Aaron D. Gifford (http://www.aarongifford.com)
  * Added source file encoding comments and updated the copyright notices
  * Fixed a tiny bug in lib/mtik/connection.rb
@@ -18,7 +33,7 @@
    which should not affect the API and should be backward compatible.  By default,
    there is no inactivity timeout for downloads.  But if you set the timeout parameter
    to a positive number, when a reply arrives and no progress/activity has been
-   made for timeout seconds, the command will be cancelled.  This should help with
+   made for timeout seconds, the command will be canceled.  This should help with
    stalled downloads (i.e. the remote side has stopped sending but the TCP connection
    remains open/active).
  * Also add the MTik::Request object as a parameter to the MTik::Connection.fetch()
