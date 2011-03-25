@@ -242,7 +242,7 @@ class MTik::Request < Array
     if @state != :sent
       raise MTik::Error.new(
         "Method MTik::Request#cancel() called with state '#{@state}' " +
-        "(should only call when state is 'sent')"
+        "(should only call when state is :sent)"
       )
     end
     @conn.send_request(true, '/cancel', '=tag=' + @tag, &callback)
@@ -254,7 +254,7 @@ class MTik::Request < Array
     if @state != :sent
       raise MTik::Error.new(
         "Method MTik::Request#cancel() called with state '#{@state}' " +
-        "(should only call when state is 'sent')"
+        "(should only call when state is :sent)"
       )
     end
     @conn.send_request(false, '/cancel', '=tag=' + @tag, &callback)
