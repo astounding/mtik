@@ -1,4 +1,4 @@
-2011-03-25 (25 JAN 2011)  VERSION 4.0.0  Aaron D. Gifford (http://www.aarongifford.com)
+2011-03-25 (25 MAR 2011)  VERSION 4.0.0  Aaron D. Gifford (http://www.aarongifford.com)
  * Per user suggestion, added a new optional cancel parameter to the MTik#command()
    method that will auto-cancel the supplied command after receiving the specified
    number of '!re' reply sentences.  This is usful for executing a command that otherwise
