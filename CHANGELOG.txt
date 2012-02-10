@@ -1,3 +1,9 @@
+2012-02-09 (09 FEB 2012)  VERSION 4.0.1  Aaron D. Gifford (http://www.aarongifford.com)
+ * Added os_version to connections.  Upon successful connect and login, the RouterOS
+   version is fetched and stored.  This will allow future updates to better support
+   some commands that differ (like fetch) depending on which RouterOS version is
+   installed on the device.
+
 2011-03-25 (25 MAR 2011)  VERSION 4.0.0  Aaron D. Gifford (http://www.aarongifford.com)
  * Per user suggestion, added a new optional cancel parameter to the MTik#command()
    method that will auto-cancel the supplied command after receiving the specified
@@ -13,6 +19,7 @@
    to symbol and fixed those, updated error messages to reflect state as a symbol,
    eliminated a few redundant key?() calls, and fixed a replycounter initialization
    typo (had set it to 1 instead of 0).
+
 2011-01-11 (11 JAN 2011)  VERSION 3.1.2  Aaron D. Gifford (http://www.aarongifford.com)
  * Added source file encoding comments and updated the copyright notices
  * Fixed a tiny bug in lib/mtik/connection.rb
@@ -85,3 +92,4 @@
       fetch.rb
   * Added VERSION.txt, CHANGELOG.txt, README.txt, LICENSE.txt, and *.gemspec files, moved
     the example files into the bin subdirectory
+

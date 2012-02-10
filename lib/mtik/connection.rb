@@ -65,6 +65,7 @@ class MTik::Connection
     @cmd_timeout  = args[:cmd_timeout]  || MTik::CMD_TIMEOUT
     @data         = ''
     @parsing      = false  ## Recursion flag
+    @os_version   = nil
 
     ## Initiate connection and immediately login to device:
     login
@@ -74,7 +75,8 @@ class MTik::Connection
   def outstanding
     return @requests.length
   end
-  attr_reader :requests, :host, :port, :user, :pass, :conn_timeout, :cmd_timeout
+  attr_reader :requests, :host, :port, :user, :pass, :conn_timeout, :cmd_timeout,
+              :os_version
 
   ## Internal utility function:
   ## Sugar-coat ["0deadf0015"].pack('H*') so one can just do
@@ -115,6 +117,13 @@ class MTik::Connection
       @sock.close
       @sock = nil
       raise MTik::Error.new('Login failed: Unknown response to login.')
+    end
+
+    ## Request the RouterOS version of the device as different versions
+    ## sometimes use slightly different command parameters:
+    reply = get_reply('/system/resource/getall')
+    if reply.first.key?('!re') && reply.first['version']
+      @os_version = reply.first['version']
     end
   end
 
