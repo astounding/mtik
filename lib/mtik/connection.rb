@@ -50,7 +50,7 @@ class MTik::Connection
   ## +user+:: Override the default API username ('admin')
   ## +pass+:: Override the default API password (blank)
   ## +conn_timeout+:: Override the default connection
-  ##                  timeout (60 seconds) -- *NOT USED*
+  ##                  timeout (60 seconds)
   ## +cmd_timeout+::  Override the default command timeout
   ##                  (60 seconds) -- the number of seconds
   ##                  to wait for additional API input.
@@ -130,9 +130,22 @@ class MTik::Connection
   ## Connect to the device
   def connect
     return unless @sock.nil?
-    ## TODO: Perhaps catch more errors; implement connection timeout
+    ## TODO: Perhaps catch more errors
     begin
-      @sock = TCPSocket::new(@host, @port)
+      addr = Socket.getaddrinfo(@host, nil)
+      @sock = Socket.new(Socket.const_get(addr[0][0]), Socket::SOCK_STREAM, 0)
+      
+      begin
+        @sock.connect_nonblock(Socket.pack_sockaddr_in(@port, addr[0][3]))
+      rescue Errno::EINPROGRESS
+        ready = IO.select([@sock], [@sock], [], @conn_timeout)
+        if ready
+          @sock
+        else
+          raise Errno::ETIMEDOUT 
+      end
+    end
+      
     rescue Errno::ECONNREFUSED, Errno::ETIMEDOUT, Errno::ENETUNREACH,
            Errno::EHOSTUNREACH => e
       @sock = nil
