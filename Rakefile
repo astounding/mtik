@@ -1,6 +1,6 @@
 require 'rubygems'
-require 'rake/gempackagetask'
-require 'rake/rdoctask'
+require 'rubygems/package_task'
+require 'rdoc/task'
 
 gemspec = Gem::Specification.new do |spec|
   spec.name         = 'mtik'
@@ -35,7 +35,7 @@ gemspec = Gem::Specification.new do |spec|
   spec.executables = [ 'tikcli', 'tikcommand', 'tikfetch' ]
 end
 
-Rake::GemPackageTask.new(gemspec) do |pkg|
+Gem::PackageTask.new(gemspec) do |pkg|
   pkg.need_zip = true
   pkg.need_tar = true
 end

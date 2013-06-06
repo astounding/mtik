@@ -1,3 +1,8 @@
+2013-06-06 (06 JUN 2013)  VERSION 4.0.2  Aaron D. Gifford (http://www.aarongifford.com)
+                                         Bart Braem (http://www.lalunerouge.net/)
+ * Merged Bart Braem's implementation of timeouts and bumped up the version.  Thanks, Bart!
+ * Updated Rakefile to remove a bit of obsolescence
+
 2012-02-09 (09 FEB 2012)  VERSION 4.0.1  Aaron D. Gifford (http://www.aarongifford.com)
  * Added os_version to connections.  Upon successful connect and login, the RouterOS
    version is fetched and stored.  This will allow future updates to better support
