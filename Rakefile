@@ -40,7 +40,7 @@ Gem::PackageTask.new(gemspec) do |pkg|
   pkg.need_tar = true
 end
 
-Rake::RDocTask.new do |rdoc|
+RDoc::Task.new do |rdoc|
   rdoc.name     = 'rdoc'
   rdoc.main     = 'README.txt'
   rdoc.rdoc_dir = 'doc'
