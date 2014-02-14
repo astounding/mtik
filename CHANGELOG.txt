@@ -1,3 +1,6 @@
+2014-02-14 (14 FEB 2014)  VERSION 4.2.3  Aaron D. Gifford (http://www.aarongifford.com)
+ * Update to fetch() utility, along with some very minor some cosmetic changes
+
 2013-06-06 (06 JUN 2013)  VERSION 4.0.2  Aaron D. Gifford (http://www.aarongifford.com)
                                          Bart Braem (http://www.lalunerouge.net/)
  * Merged Bart Braem's implementation of timeouts and bumped up the version.  Thanks, Bart!
