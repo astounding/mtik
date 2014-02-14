@@ -571,7 +571,7 @@ class MTik::Connection
       ]
     end
 
-    req = get_reply_each(command)  do |r, s|
+    req = get_reply_each(command[0], *command[1..-1])  do |r, s|
       if s.key?('!re') && !done
         unless s.key?('status')
           raise MTik::Error.new("Unknown response to '/tool/fetch': missing 'status' in response.")
