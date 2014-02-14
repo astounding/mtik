@@ -2,9 +2,8 @@
 ########################################################################
 #--
 #
-# FILE:  tikjson.rb -- Example of using the Ruby MikroTik API in Ruby
-#                      to execute an API command and retrieve results
-#                      in JSON format
+# FILE:  tikfetch.rb -- Example of using the Ruby MikroTik API in
+#                       Ruby to download a URL to a device
 #
 #++
 # Author::    Aaron D. Gifford - http://www.aarongifford.com/
@@ -43,30 +42,15 @@ $LOAD_PATH.unshift(File.dirname(__FILE__)+'/../lib')
 
 require 'rubygems'
 require 'mtik'
-require 'json'
 
-unless ARGV.length > 3
-  STDERR.print("Usage: #{$0} <host> <user> <pass> <command> [<args>...] [<command> [<args> ...]]\n")
+unless ARGV.length == 4
+  STDERR.print("Usage: #{$0} <host> <user> <pass> <url-for-tik-to-fetch>\n")
   exit(-1)
 end
 
-## Detect multiple command sequences and build an array of arrays
-## where each outer array element is a command plus arguments:
-command = Array.new
-i = 3
-while i < ARGV.length
-  if ARGV[i][0,1] == '/'  ## Command detected...
-    command << [ ARGV[i] ]
-  else
-    command[command.length-1] << ARGV[i]
-  end
-  i += 1
+tk = MTik::Connection.new(:host => ARGV[0], :user => ARGV[1], :pass => ARGV[2])
+tk.fetch(ARGV[3]) do |status, total, bytes|
+  puts "fetch status: #{status} -- #{bytes} bytes of #{total} downloaded..."
 end
-
-print MTik::command(
-  :host=>ARGV[0],
-  :user=>ARGV[1],
-  :pass=>ARGV[2],
-  :command=>command
-).to_json + "\n"
+tk.close
 
