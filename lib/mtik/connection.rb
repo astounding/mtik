@@ -134,7 +134,7 @@ class MTik::Connection
     begin
       addr = Socket.getaddrinfo(@host, nil)
       @sock = Socket.new(Socket.const_get(addr[0][0]), Socket::SOCK_STREAM, 0)
-      
+
       begin
         @sock.connect_nonblock(Socket.pack_sockaddr_in(@port, addr[0][3]))
       rescue Errno::EINPROGRESS
@@ -142,10 +142,10 @@ class MTik::Connection
         if ready
           @sock
         else
-          raise Errno::ETIMEDOUT 
+          raise Errno::ETIMEDOUT
       end
     end
-      
+
     rescue Errno::ECONNREFUSED, Errno::ETIMEDOUT, Errno::ENETUNREACH,
            Errno::EHOSTUNREACH => e
       @sock = nil
@@ -257,7 +257,7 @@ class MTik::Connection
       sentence = get_sentence  ## This call must be ATOMIC or re-entrant safety fails
 
       ## Check for '!fatal' before checking for a tag--'!fatal'
-      ## is never(???) tagged: 
+      ## is never(???) tagged:
       if sentence.key?('!fatal')
         ## FATAL ERROR has occured! (Or a '/quit' command was issued...)
         if @data.length > 0
@@ -356,7 +356,7 @@ class MTik::Connection
   ## +args+::              Zero or more arguments to the command
   ## +callback+::          Proc/lambda code (or code block if not provided as
   ##                       an argument) to be called.  (See the +await_completion+
-  ##                    
+  ##
   def send_request(await_completion, command, *args, &callback)
     if await_completion.is_a?(MTik::Request)
       req = await_completion
@@ -525,16 +525,53 @@ class MTik::Connection
   ## +total+::    Final expected file size in bytes
   ## +bytes+::    Number of bytes transferred so far
   ## +request+::  The MTik::Request object
-  def fetch(url, filename, timeout=nil, &callback)
+  def fetch(url, filename=nil, timeout=nil, &callback)
+    require 'uri'
+
+    uri = URI(url)
+    filename = File.basename(uri.path) if filename.nil?
+
     total  = bytes = oldbytes = 0
     status = ''
     done   = false
     lastactivity = Time.now
-    req = get_reply_each(
-      '/tool/fetch',
-      '=url=' + url,
-      '=dst-path=' + filename
-    ) do |r, s|
+
+    ## RouterOS versions 4.9 and prior (not sure if this version cut-off
+    ## is exactly right) would accept the url parameter, but failed to
+    ## download the files.  So for versions older than this, we'll use
+    ## the mode/src-path/port parameters instead if possible.
+    if !@os_version.nil? && lambda {|a,b|
+      sr = %r{(?:\.|rc|beta|alpha)}
+      a = a.split(sr).map{|i| i.to_i}
+      b = b.split(sr).map{|i| i.to_i}
+      i = 0
+      while i < a.size && i < b.size
+        return -1 if a[i] < b[i]
+        return  1 if a[i] > b[i]
+        i += 1
+      end
+      return a.size <=> b.size
+    }.call(@os_version, '4.9') < 1
+      command = [
+        '/tool/fetch', '=mode=' + uri.scheme,
+        '=src-path=' + uri.path + (uri.query.size > 0 ? '?' + uri.query : ''),
+        '=dst-path=' + filename
+      ]
+      case uri.scheme
+      when 'http'
+        command << '=port=80'
+      when 'https'
+        command << '=port=443'
+      end
+    else
+      command = [
+        '/tool/fetch',
+        '=url=' + url,
+        '=dst-path=' + filename
+      ]
+    end
+
+    req = get_reply_each(command)  do |r, s|
       if s.key?('!re') && !done
         unless s.key?('status')
           raise MTik::Error.new("Unknown response to '/tool/fetch': missing 'status' in response.")
@@ -624,7 +661,7 @@ class MTik::Connection
           else
             raise MTik::Error.new("Invalid settings match class '#{keyitem}' (expected Array, Regexp, or String)")
           end
-            
+
           if s.key?(key)
             ## A key matches! && s[k] != v
             oldv = s[k]
