@@ -43,6 +43,8 @@ module MTik
 
   ## Default MikroTik RouterOS API TCP port:
   PORT = 8728
+  ## Default MikroTik RouterOS API-SSL TCP port:
+  PORT_SSL = 8729
   ## Default username to use if none is specified:
   USER = 'admin'
   ## Default password to use if none is specified:
@@ -55,6 +57,9 @@ module MTik
 
   ## Maximum number of replies before a command is auto-canceled:
   MAXREPLIES   = 1000
+
+  ## SSL is set to false by default
+  USE_SSL = false
 
   @verbose = false
   @debug   = false
