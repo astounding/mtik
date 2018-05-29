@@ -39,6 +39,7 @@
 class MTik::Connection
   require 'socket'
   require 'digest/md5'
+  require 'openssl'
 
   ## Initialize/construct the new _MTik_ object.  One or more
   ## key/value pair style arguments must be specified. The one
@@ -56,9 +57,11 @@ class MTik::Connection
   ##                  to wait for additional API input.
   def initialize(args)
     @sock         = nil
+    @ssl_sock     = nil
     @requests     = Hash.new
+    @use_ssl      = args[:ssl] || MTik::USE_SSL
     @host         = args[:host]
-    @port         = args[:port] || MTik::PORT
+    @port         = args[:port] || (@use_ssl ? MTik::PORT_SSL : MTik::PORT)
     @user         = args[:user] || MTik::USER
     @pass         = args[:pass] || MTik::PASS
     @conn_timeout = args[:conn_timeout] || MTik::CONN_TIMEOUT
@@ -146,11 +149,24 @@ class MTik::Connection
       end
     end
 
+    connect_ssl(@sock) if @use_ssl
+
     rescue Errno::ECONNREFUSED, Errno::ETIMEDOUT, Errno::ENETUNREACH,
            Errno::EHOSTUNREACH => e
       @sock = nil
       raise e ## Re-raise the exception
     end
+  end
+
+  def connect_ssl(sock)
+    ssl_context = OpenSSL::SSL::SSLContext.new()
+    ssl_context.ciphers = ['HIGH']
+    ssl_socket = OpenSSL::SSL::SSLSocket.new(sock, ssl_context)
+    ssl_socket.sync_close = true
+    unless ssl_socket.connect
+      raise MTik::Error.new("Cannot establish SSL connection.")
+    end
+    @ssl_sock = ssl_socket
   end
 
   ## Wait for and read exactly one sentence, regardless of content:
@@ -214,7 +230,7 @@ class MTik::Connection
         )
       end
       if sel[0].length == 1
-        @data += @sock.recv(8192)
+        @data += recv(8192)
       elsif sel[2].length == 1
         raise MTik::Error.new(
           "I/O (select) error while awaiting data with #{outstanding} pending " +
@@ -384,8 +400,21 @@ class MTik::Connection
 
   ## Send the request object over the socket
   def xmit(req)
-    @sock.send(req.request, 0)
+    if @ssl_sock
+      @ssl_sock.write(req.request)
+    else
+      @sock.send(req.request, 0)
+    end
+
     return req
+  end
+
+  def recv(buffer_size)
+    if @ssl_sock
+      @ssl_sock.read_nonblock(buffer_size)
+    else
+      @sock.recv(buffer_size)
+    end
   end
 
   ## Send a command, then wait for the command to complete, then return
@@ -420,8 +449,10 @@ class MTik::Connection
 
   ## Close the connection.
   def close
-    return if @sock.nil?
-    @sock.close
+    return if @sock.nil? and @ssl_sock.nil?
+    @ssl_sock.close if @ssl_sock and !@ssl_sock.closed?
+    @sock.close if @sock and !@sock.closed?
+    @ssl_sock = nil
     @sock = nil
   end
 
