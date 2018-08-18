@@ -40,7 +40,6 @@ class MTik::Connection
   require 'socket'
   require 'digest/md5'
   require 'openssl'
-  require 'pry'
 
   ## Initialize/construct the new _MTik_ object.  One or more
   ## key/value pair style arguments must be specified. The one
