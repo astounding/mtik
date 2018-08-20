@@ -222,7 +222,8 @@ class MTik::Connection
       end
       oldlen = @data.length
       ## Read some more data IF any is available:
-      sel = IO.select([@sock],nil,[@sock], @cmd_timeout)
+      sock = @ssl_sock || @sock
+      sel = IO.select([sock],nil,[sock], @cmd_timeout)
       if sel.nil?
         raise MTik::TimeoutError.new(
           "Time-out while awaiting data with #{outstanding} pending " +
@@ -411,9 +412,27 @@ class MTik::Connection
 
   def recv(buffer_size)
     if @ssl_sock
-      @ssl_sock.read_nonblock(buffer_size)
+      recv_openssl(buffer_size)
     else
       @sock.recv(buffer_size)
+    end
+  end
+
+  # 2 cases for backwards compatibility
+  def recv_openssl(buffer_size)
+    if OpenSSL::SSL.const_defined? 'SSLErrorWaitReadable'.freeze
+      begin
+        @ssl_sock.read_nonblock(buffer_size)
+      rescue OpenSSL::SSL::SSLErrorWaitReadable
+        ''
+      end
+    else
+      begin
+        @ssl_sock.read_nonblock(buffer_size)
+      rescue OpenSSL::SSL::SSLError => e
+        return '' if e.message == 'read would block'.freeze
+        raise e
+      end
     end
   end
 
