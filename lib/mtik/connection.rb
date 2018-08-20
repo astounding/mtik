@@ -47,7 +47,8 @@ class MTik::Connection
   ## to.
   ## +host+:: This is the only _required_ argument. Example:
   ##          <i> :host => "rb411.example.org" </i>
-  ## +port+:: Override the default API port (8728)
+  ## +ssl+::  Use SSL to encrypt communications
+  ## +port+:: Override the default API port (8728/8729)
   ## +user+:: Override the default API username ('admin')
   ## +pass+:: Override the default API password (blank)
   ## +conn_timeout+:: Override the default connection
@@ -55,20 +56,22 @@ class MTik::Connection
   ## +cmd_timeout+::  Override the default command timeout
   ##                  (60 seconds) -- the number of seconds
   ##                  to wait for additional API input.
+  ## +unencrypted_plaintext+::  Attempt to use the 6.43+ login API even without SSL
   def initialize(args)
-    @sock         = nil
-    @ssl_sock     = nil
-    @requests     = Hash.new
-    @use_ssl      = args[:ssl] || MTik::USE_SSL
-    @host         = args[:host]
-    @port         = args[:port] || (@use_ssl ? MTik::PORT_SSL : MTik::PORT)
-    @user         = args[:user] || MTik::USER
-    @pass         = args[:pass] || MTik::PASS
-    @conn_timeout = args[:conn_timeout] || MTik::CONN_TIMEOUT
-    @cmd_timeout  = args[:cmd_timeout]  || MTik::CMD_TIMEOUT
-    @data         = ''
-    @parsing      = false  ## Recursion flag
-    @os_version   = nil
+    @sock                  = nil
+    @ssl_sock              = nil
+    @requests              = Hash.new
+    @use_ssl               = args[:ssl] || MTik::USE_SSL
+    @unencrypted_plaintext = args[:unecrypted_plaintext]
+    @host                  = args[:host]
+    @port                  = args[:port] || (@use_ssl ? MTik::PORT_SSL : MTik::PORT)
+    @user                  = args[:user] || MTik::USER
+    @pass                  = args[:pass] || MTik::PASS
+    @conn_timeout          = args[:conn_timeout] || MTik::CONN_TIMEOUT
+    @cmd_timeout           = args[:cmd_timeout]  || MTik::CMD_TIMEOUT
+    @data                  = ''
+    @parsing               = false  ## Recursion flag
+    @os_version            = nil
 
     ## Initiate connection and immediately login to device:
     login
@@ -98,28 +101,41 @@ class MTik::Connection
       raise MTik::Error.new("Login failed: Unable to connect to device.")
     end
 
-    ## Send first /login command to obtain the challenge:
-    reply = get_reply('/login')
-    ## Make sure the reply has the info we expect:
-    if reply.length != 1 || reply[0].length != 3 || !reply[0].key?('ret')
-      raise MTik::Error.new("Login failed: unexpected reply to login attempt.")
+    # Try using the the post-6.43 login API; on older routers this still initiates
+    # a regular challenge-response cycle.
+    if @use_ssl || @unencrypted_plaintext
+      warn("SENDING PLAINTEXT PASSWORD OVER UNENCRYPTED CONNECTION") unless @use_ssl
+      reply = get_reply('/login',["=name=#{@user}","=password=#{@pass}"])
+      if reply.length == 1 && reply[0].length == 2 && reply[0].key?('!done')
+        v_6_43_login_successful = true
+      end
+    else
+      ## Just send first /login command to obtain the challenge, if not using SSL
+      reply = get_reply('/login')
     end
 
-    ## Grab the challenge from first (only) sentence in the reply:
-    challenge = hex2bin(reply[0]['ret'])
+    unless v_6_43_login_successful
+      ## Make sure the reply has the info we expect for challenge-response authentication:
+      if reply.length != 1 || reply[0].length != 3 || !reply[0].key?('ret')
+        raise MTik::Error.new("Login failed: unexpected reply to login attempt.")
+      end
 
-    ## Generate reply MD5 hash and convert binary hash to hex string:
-    response  = Digest::MD5.hexdigest(0.chr + @pass + challenge)
+      ## Grab the challenge from first (only) sentence in the reply:
+      challenge = hex2bin(reply[0]['ret'])
 
-    ## Send second /login command with our response:
-    reply = get_reply('/login', '=name=' + @user, '=response=00' + response)
-    if reply[0].key?('!trap')
-      raise MTik::Error.new("Login failed: " + (reply[0].key?('message') ? reply[0]['message'] : 'Unknown error.'))
-    end
-    unless reply.length == 1 && reply[0].length == 2 && reply[0].key?('!done')
-      @sock.close
-      @sock = nil
-      raise MTik::Error.new('Login failed: Unknown response to login.')
+      ## Generate reply MD5 hash and convert binary hash to hex string:
+      response  = Digest::MD5.hexdigest(0.chr + @pass + challenge)
+
+      ## Send second /login command with our response:
+      reply = get_reply('/login', '=name=' + @user, '=response=00' + response)
+      if reply[0].key?('!trap')
+        raise MTik::Error.new("Login failed: " + (reply[0].key?('message') ? reply[0]['message'] : 'Unknown error.'))
+      end
+      unless reply.length == 1 && reply[0].length == 2 && reply[0].key?('!done')
+        @sock.close
+        @sock = nil
+        raise MTik::Error.new('Login failed: Unknown response to login.')
+      end
     end
 
     ## Request the RouterOS version of the device as different versions

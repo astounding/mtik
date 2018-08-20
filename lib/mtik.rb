@@ -34,12 +34,12 @@
 # encoding: ASCII-8BIT
 
 module MTik
-  require 'mtik/error.rb'
-  require 'mtik/fatalerror.rb'
-  require 'mtik/timeouterror.rb'
-  require 'mtik/request.rb'
-  require 'mtik/reply.rb'
-  require 'mtik/connection.rb'
+  require_relative 'mtik/error.rb'
+  require_relative 'mtik/fatalerror.rb'
+  require_relative 'mtik/timeouterror.rb'
+  require_relative 'mtik/request.rb'
+  require_relative 'mtik/reply.rb'
+  require_relative 'mtik/connection.rb'
 
   ## Default MikroTik RouterOS API TCP port:
   PORT = 8728
