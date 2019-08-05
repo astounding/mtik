@@ -207,6 +207,8 @@ module MTik
   ##     :pass    => the API password to authenticate with
   ##     :command => one or more API commands to execute
   ##     :limit   => an OPTIONAL integer reply limit
+  ##     :use_ssl => use SSL for connecting to mikrotik device
+  ##     :unencrypted_plaintext => use 6.43+ login even without ssl
   ##
   ## The :command parameter may be:
   ##   * A single string representing a single API command to execute
@@ -250,8 +252,11 @@ module MTik
       :user => args[:user],
       :pass => args[:pass],
       :port => args[:port],
+      :ssl  => args[:ssl],
+
       :conn_timeout => args[:conn_timeout],
-      :cmd_timeout  => args[:cmd_timeout]
+      :cmd_timeout  => args[:cmd_timeout],
+      :unencrypted_plaintext => args[:unencrypted_plaintext],
     )
     limit = args[:limit]  ## Optional reply limit
     cmd = args[:command]

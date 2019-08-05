@@ -66,6 +66,8 @@ p MTik::command(
   :host=>ARGV[0],
   :user=>ARGV[1],
   :pass=>ARGV[2],
-  :command=>command
-)
+  :ssl => ENV['MTIK_SSL'] || false,
+  :command=>command,
 
+  :unencrypted_plaintext => ENV['MTIK_UNENCRYPTED_PLAINTEXT'] || false,
+)
