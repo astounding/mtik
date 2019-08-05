@@ -62,7 +62,7 @@ class MTik::Connection
     @ssl_sock              = nil
     @requests              = Hash.new
     @use_ssl               = args[:ssl] || MTik::USE_SSL
-    @unencrypted_plaintext = args[:unecrypted_plaintext]
+    @unencrypted_plaintext = args[:unencrypted_plaintext]
     @host                  = args[:host]
     @port                  = args[:port] || (@use_ssl ? MTik::PORT_SSL : MTik::PORT)
     @user                  = args[:user] || MTik::USER
