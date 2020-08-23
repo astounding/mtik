@@ -1,4 +1,13 @@
-2014-02-14 (14 FEB 2014)  VERSION 4.2.3  Aaron D. Gifford (http://www.aarongifford.com)
+2020-08-22 (22 AUG 2020)  VERSION 4.0.5
+  * This is a cosmetic version bump for the purpose of updating the gem for wider
+    availability via rubygems in addition to directly from github prior to some
+    coming feature updates and fixes for newer versions of RouterOS
+
+2019-07-26 (26 JUL 2020)  VERSION 4.0.4  Adam Kubica (github user xcr)
+  * Adam bumped the version number and separated out a gemspec file
+  * Jiacheng (github user krhougs) had submitted a similar update as Adam
+
+2014-02-14 (14 FEB 2014)  VERSION 4.0.3  Aaron D. Gifford (http://www.aarongifford.com)
  * Update to fetch() utility, along with some very minor some cosmetic changes
 
 2013-06-06 (06 JUN 2013)  VERSION 4.0.2  Aaron D. Gifford (http://www.aarongifford.com)
