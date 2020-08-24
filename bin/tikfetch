@@ -46,16 +46,48 @@ require 'mtik'
 ## output of all API interactions:
 #MTik::verbose = true
 
-if ARGV.length < 4
-  print "Usage: #{$0} <device> <user> <pass> <url> [<localfilename> [<url> [<localfilename> ... ]]]\n"
-  exit
+def usage(msg='')
+  STDERR.print(
+    (msg.size > 0 ? msg + "\n\n" : '') +
+    "Usage: #{$0} [-s|--ssl] [-u|--unencrypted_plaintext] <device> <user> <pass> <url> [<localfilename> [<url> [<localfilename> ... ]]]\n" +
+    "       --unencrypted_plaintext OR -u  - Use the 6.43+ login API even if NOT\n" +
+    "                                        using SSL.\n"                          +
+    "       --ssl OR -s                    - Use SSL for the API connection.\n"
+  )
+  exit(-1)
 end
 
-host = ARGV.shift
-user = ARGV.shift
-pass = ARGV.shift
+use_ssl = unencrypted_plaintext = false
+while !ARGV[0].nil? && ARGV[0][0] == '-'
+  arg = ARGV.shift
+  case arg
+  when '--ssl', '-s'
+    usage("Please do not repeat the --ssl (or -s) parameter") if use_ssl
+    use_ssl = true
+  when '--unencrypted_plaintext', '-u'
+    usage("Please do not repeat the --unencrypted_plaintext (or -u) parameter") if unencrypted_plaintext
+    unencrypted_plaintext = true
+  else
+    usage("Unknown argument #{arg.inspect}")
+  end
+end
+usage("Too few arguments.") if ARGV.size < 4
+
+## Permit setting use_ssl and unencrypted_plaintext via environment variables:
+use_ssl               = true if ENV['MTIK_SSL']
+unencrypted_plaintext = true if ENV['MTIK_UNENCRYPTED_PLAINTEXT']
+
+args = {
+  :host => ARGV.shift,
+  :user => ARGV.shift,
+  :pass => ARGV.shift,
+  :ssl  => use_ssl,
+  :unencrypted_plaintext => unencrypted_plaintext
+}
+
+
 begin
-  mt = MTik::Connection.new(:host=>host, :user=>user, :pass=>pass)
+  mt = MTik::Connection.new(args)
 rescue Errno::ETIMEDOUT, Errno::ENETUNREACH, Errno::EHOSTUNREACH, MTik::Error => e
   print ">>> ERROR CONNECTING: #{e}\n"
   exit
@@ -129,6 +161,7 @@ print "SIZE        CREATED               FILENAME\n"
 print "====================================================================\n"
 mt.get_reply_each('/file/getall') do |req, s|
   unless s.key?('!done')
+    s['size'] = 'directory' if s['type'] == 'directory'
     print "#{(s['size']+'        ')[0,10]}  #{s['creation-time']}  #{s['name']}\n"
   end
 end
