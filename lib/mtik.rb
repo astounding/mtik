@@ -49,7 +49,7 @@ module MTik
   USER = 'admin'
   ## Default password to use if none is specified:
   PASS = ''
-  ## Connection timeout default -- *NOT USED* 
+  ## Connection timeout default -- *NOT USED*
   CONN_TIMEOUT = 60
   ## Command timeout -- The maximum number of seconds to wait for more
   ## API data when expecting one or more command responses.
@@ -86,12 +86,30 @@ module MTik
 
 
   ## Act as an interactive client with the device, accepting user
-  ## input from STDIN.
-  def self.interactive_client(host, user, pass)
+  ## input from STDIN.  Arguments are key/value pairs, and are
+  ## simply passed directly to MTik::Connection().  The below
+  ## documentation is taken directly from MTik::Connection. One
+  ## more ## key/value pair style arguments must be specified.
+  ## The one ## required argument is the host or IP of the device
+  ## to connect to.
+  ## +host+:: This is the only _required_ argument. Example:
+  ##          <i> :host => "rb411.example.org" </i>
+  ## +ssl+::  Use SSL to encrypt communications
+  ## +port+:: Override the default API port (8728/8729)
+  ## +user+:: Override the default API username ('admin')
+  ## +pass+:: Override the default API password (blank)
+  ## +conn_timeout+:: Override the default connection
+  ##                  timeout (60 seconds)
+  ## +cmd_timeout+::  Override the default command timeout
+  ##                  (60 seconds) -- the number of seconds
+  ##                  to wait for additional API input.
+  ## +unencrypted_plaintext+::  Attempt to use the 6.43+ login API
+  ##                            even without SSL
+  def self.interactive_client(args)
     old_verbose = MTik::verbose
     MTik::verbose = true
     begin
-      tk = MTik::Connection.new(:host => host, :user => user, :pass => pass)
+      tk = MTik::Connection.new(args)
     rescue MTik::Error, Errno::ECONNREFUSED => e
       print "=== LOGIN ERROR: #{e.message}\n"
       exit
@@ -132,7 +150,7 @@ module MTik
               cmd == '/tool/fetch' && sentence['status'] == 'finished'
             ) || (maxreply > 0 && count == maxreply)
               state = 2
-              req.cancel do |r, s|  
+              req.cancel do |r, s|
                 state = 1
               end
             end
@@ -159,7 +177,7 @@ module MTik
         end
       end
     end
- 
+
     reply = tk.get_reply('/quit')
     unless reply[0].key?('!fatal')
       raise MTik::Error.new("Unexpected response to '/quit' command.")
@@ -245,16 +263,9 @@ module MTik
   ## Remember that the limit applies separately to each API command
   ## executed.
   def self.command(args)
-    tk = MTik::Connection.new(
-      :host => args[:host],
-      :user => args[:user],
-      :pass => args[:pass],
-      :port => args[:port],
-      :conn_timeout => args[:conn_timeout],
-      :cmd_timeout  => args[:cmd_timeout]
-    )
-    limit = args[:limit]  ## Optional reply limit
-    cmd = args[:command]
+    tk      = MTik::Connection.new(args)
+    limit   = args[:limit]  ## Optional reply limit
+    cmd     = args[:command]
     replies = Array.new
     if cmd.is_a?(String)
       ## Single command, no arguments
