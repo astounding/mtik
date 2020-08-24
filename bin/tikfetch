@@ -42,22 +42,20 @@ $LOAD_PATH.unshift(File.dirname(__FILE__)+'/../lib')
 require 'rubygems'
 require 'mtik'
 
-## Uncomment this (set $VERBOSE to true) if you want crazy verbose
-## output of all API interactions:
-#MTik::verbose = true
 
 def usage(msg='')
   STDERR.print(
     (msg.size > 0 ? msg + "\n\n" : '') +
-    "Usage: #{$0} [-s|--ssl] [-u|--unencrypted_plaintext] <device> <user> <pass> <url> [<localfilename> [<url> [<localfilename> ... ]]]\n" +
+    "Usage: #{$0} [-s|--ssl] [-u|--unencrypted_plaintext] [-v|--verbose] <device> <user> <pass> <url> [<localfilename> [<url> [<localfilename> ... ]]]\n" +
     "       --unencrypted_plaintext OR -u  - Use the 6.43+ login API even if NOT\n" +
     "                                        using SSL.\n"                          +
-    "       --ssl OR -s                    - Use SSL for the API connection.\n"
+    "       --ssl OR -s                    - Use SSL for the API connection.\n"     +
+    "       --verbose OR -v                - Enable verbose output via STDOUT.\n"
   )
   exit(-1)
 end
 
-use_ssl = unencrypted_plaintext = false
+use_ssl = unencrypted_plaintext = verbose = false
 while !ARGV[0].nil? && ARGV[0][0] == '-'
   arg = ARGV.shift
   case arg
@@ -67,6 +65,9 @@ while !ARGV[0].nil? && ARGV[0][0] == '-'
   when '--unencrypted_plaintext', '-u'
     usage("Please do not repeat the --unencrypted_plaintext (or -u) parameter") if unencrypted_plaintext
     unencrypted_plaintext = true
+  when '--verbose', '-v'
+    usage("Please do not repeat the --verbose (or -v) parameter") if verbose
+    verbose = true
   else
     usage("Unknown argument #{arg.inspect}")
   end
@@ -76,6 +77,9 @@ usage("Too few arguments.") if ARGV.size < 4
 ## Permit setting use_ssl and unencrypted_plaintext via environment variables:
 use_ssl               = true if ENV['MTIK_SSL']
 unencrypted_plaintext = true if ENV['MTIK_UNENCRYPTED_PLAINTEXT']
+verbose               = true if ENV['MTIK_VERBOSE']
+
+MTik::verbose = verbose
 
 args = {
   :host => ARGV.shift,
