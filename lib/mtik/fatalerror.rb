@@ -1,8 +1,8 @@
 ############################################################################
 ## A Ruby library implementing the Ruby MikroTik API
 ############################################################################
-## Author::    Aaron D. Gifford - http://www.aarongifford.com/
-## Copyright:: Copyright (c) 2009-2011, InfoWest, Inc.
+## Author::    Aaron D. Gifford - https://aarongifford.com/
+## Copyright:: Copyright (c) 2009-2020, InfoWest, Inc.
 ## License::   BSD license
 ##
 ## Redistribution and use in source and binary forms, with or without

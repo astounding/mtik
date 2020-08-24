@@ -4,7 +4,7 @@ Gem::Specification.new do |spec|
   spec.date         = File.mtime('VERSION.txt')
   spec.author       = 'Aaron D. Gifford'
   spec.email        = 'email_not_accepted@aarongifford.com'
-  spec.homepage     = 'http://www.aarongifford.com/computers/mtik/'
+  spec.homepage     = 'https://aarongifford.com/computers/mtik/'
   spec.summary      = 'MTik implements the MikroTik RouterOS API for use in Ruby.'
   spec.description  = 'MTik implements the MikroTik RouterOS API for use in Ruby.'
   spec.rubyforge_project = 'mtik'
