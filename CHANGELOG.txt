@@ -1,3 +1,6 @@
+  * Fixed the credits in CHANGELOG for who submitted what that appeared
+    in version 4.0.4. (And tweaked a credit or two elsewhere too.)
+
 2020-08-24 (24 AUG 2020)  VERSION 4.1.2
   * Added tikjson to the executables list in mtik.gemspec
     (Yes, I totally forgot to do this for 4.1.1. Oops!)
@@ -14,7 +17,7 @@
     CLI option (except for tikcli) and matching MTIK_VERBOSE
     environment variable.
 
-2020-08-23 (23 AUG 2020)  VERSION 4.1.0
+2020-08-23 (23 AUG 2020)  VERSION 4.1.0  Zdenek Crha (github user zdenek-crha)
   * Minor version bump due to changing argument passing for the call to
     MTik.interactive_client()
   * Updated tikcli, tikcommand, and tikfetch commands to add options for
@@ -34,15 +37,30 @@
     availability via rubygems in addition to directly from github prior to some
     coming feature updates and fixes for newer versions of RouterOS
 
-2019-07-26 (26 JUL 2020)  VERSION 4.0.4  Adam Kubica (github user xcr)
-  * Adam bumped the version number and separated out a gemspec file
-  * Jiacheng (github user krhougs) had submitted a similar update as Adam
+2019-07-26 (26 JUL 2020)  VERSION 4.0.4  Filip Zachar (github user tulak)
+                                         Adam Gardner (github user philomory)
+                                         Adam Kubica (github user xcdr)
+                                         Jiacheng (github user krhougs)
+  * Merged Filip Zachar's adding of SSL API support and also a subsequent
+    fix to retry when SSLErrorWaitReadable occurs with @ssl_sock.read_nonblock
+  * Merged Adam Gardner's pull request that adds support for RouterOS versions
+    greather than 6.43.  The post-6.43 API sends the username and password
+    in the initial /login sentence.  Adam's implementation by default uses
+    the new /login style if connecting over SSL, or if the user requests
+    it explicitly otherwise using the :unencrypted_plaintext option, which
+    indicates the user is well aware of the danger of sending credentials
+    over the wire in the clear.
+  * Merged Adam Kubica's pull request that creates a new mtik.gemspec file
+    using information taken originally from the Rakefile and bumps the version
+    up to 4.0.4.
+  * Jiacheng (github user krhougs) also submitted a pull request similar to
+    Adam Kubica's creating a gemspec file and bumping the version number.
 
 2014-02-14 (14 FEB 2014)  VERSION 4.0.3  Aaron D. Gifford (https://aarongifford.com)
  * Update to fetch() utility, along with some very minor some cosmetic changes
 
 2013-06-06 (06 JUN 2013)  VERSION 4.0.2  Aaron D. Gifford (https://aarongifford.com)
-                                         Bart Braem (http://www.lalunerouge.net/)
+                                         Bart Braem (github user aquila)
  * Merged Bart Braem's implementation of timeouts and bumped up the version.  Thanks, Bart!
  * Updated Rakefile to remove a bit of obsolescence
 
