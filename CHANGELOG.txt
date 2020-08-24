@@ -1,3 +1,18 @@
+2020-08-23 (23 AUG 2020)  VERSION 4.1.0
+  * Minor version bump due to changing argument passing for the call to
+    MTik.interactive_client()
+  * Updated tikcli, tikcommand, and tikfetch commands to add options for
+    enabling SSL and/or to use unencrypted plaintext logins (newer API
+    login style).  Also one can set environment variables MTIK_SSL to 
+    specify SSL use, or MTIK_UNENCRYPTED_PLAINTEXT to enable unencrypted
+    plaintext logins if SSL is NOT used for compatibility with cleartext
+    API usage on RouterOS versions 6.43+
+  * THANKS to Zdenek Crha (zdenek-crha on github) for pointing out that
+    the binary commands were lacking proper argument passing to allow
+    for SSL and/or unencrypted plaintext options, and for suggesting the
+    use of environment variables as an alterative to CLI options for
+    enabling such.
+
 2020-08-22 (22 AUG 2020)  VERSION 4.0.5
   * This is a cosmetic version bump for the purpose of updating the gem for wider
     availability via rubygems in addition to directly from github prior to some
@@ -66,7 +81,7 @@
  * Fixed RDoc formatting in several files, and added an RDocTask to the Rakefile
 
 2010-04-23 (23 APR 2010)  VERSION 3.0.5  Aaron D. Gifford (http://www.aarongifford.com)
- * Double bug-fix (typo fix and logic fix) to request.rb thanks to Allan Eising and 
+ * Double bug-fix (typo fix and logic fix) to request.rb thanks to Allan Eising and
    Søren Daugaard.  Thank you both for the patch!
  * Added a brief sanity-check in request.rb to help spotlight logic errors.
 
