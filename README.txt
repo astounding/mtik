@@ -27,7 +27,7 @@ The latest version of MTik can be found at
 
 Ruby RDoc documentation can be found online at
 
-* https://aarongifford.com/computers/mtik/latest/doc/
+* https://aarongifford.com/computers/mtik/doc/
 
 Additional documentation is available at
 
