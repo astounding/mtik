@@ -1,0 +1,118 @@
+#!/usr/bin/env ruby
+########################################################################
+#--
+#
+# FILE:       tikjson -- Example of using the Ruby MikroTik API in Ruby
+#                        to execute an API command and retrieve results
+#                        in JSON format
+#
+#++
+# Author::    Aaron D. Gifford - https://aarongifford.com/
+# Copyright:: Copyright (c) 2009-2020, InfoWest, Inc.
+# License::   BSD license
+#--
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, the above list of authors and contributors, this list of
+#    conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+# 3. Neither the name of the author(s) or copyright holder(s) nor the
+#    names of any contributors may be used to endorse or promote products
+#    derived from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER(S), AUTHOR(S) AND
+# CONTRIBUTORS ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+# AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+# IN NO EVENT SHALL THE COPYRIGHT HOLDER(S), AUTHOR(S), OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# DCONSEQUENTIAL AMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+# THE POSSIBILITY OF SUCH DAMAGE.
+########################################################################
+# encoding: ASCII-8BIT
+
+$LOAD_PATH.unshift(File.dirname(__FILE__)+'/../lib')
+
+require 'rubygems'
+require 'mtik'
+require 'json'
+
+def usage(msg='')
+  STDERR.print(
+    (msg.size > 0 ? msg + "\n\n" : '') +
+    "Usage: #{$0} [-s|--ssl] [-u|--unencrypted_plaintext] <host> <user> <pass> <command> [<args>...] [<command> [<args> ...]]\n" +
+    "       --unencrypted_plaintext OR -u  - Use the 6.43+ login API even if NOT\n"      +
+    "                                        using SSL.\n"                               +
+    "       --pretty OR -p                 - Output JSON using JSON.pretty_generate()\n" +
+    "       --ssl OR -s                    - Use SSL for the API connection.\n"          +
+    "       --verbose OR -v                - Enable verbose output to STDERR.\n"
+  )
+  exit(-1)
+end
+
+use_ssl = unencrypted_plaintext = pretty = verbose = false
+while !ARGV[0].nil? && ARGV[0][0] == '-'
+  arg = ARGV.shift
+  case arg
+  when '--pretty', '-p'
+    usage("Please do not repeat the --pretty (or -p) parameter") if pretty
+    pretty = true
+  when '--ssl', '-s'
+    usage("Please do not repeat the --ssl (or -s) parameter") if use_ssl
+    use_ssl = true
+  when '--unencrypted_plaintext', '-u'
+    usage("Please do not repeat the --unencrypted_plaintext (or -u) parameter") if unencrypted_plaintext
+    unencrypted_plaintext = true
+  when '--verbose', '-v'
+    usage("Please do not repeat the --verbose (or -v) parameter") if verbose
+    verbose = true
+  else
+    usage("Unknown argument #{arg.inspect}")
+  end
+end
+usage("Too few arguments.") if ARGV.size < 4
+usage("First command must start with a slash '/' character. #{ARGV[3].inspect}") if ARGV[3].nil? || ARGV[3][0] != '/'
+
+## Permit setting use_ssl and unencrypted_plaintext via environment variables:
+use_ssl               = true if ENV['MTIK_SSL']
+unencrypted_plaintext = true if ENV['MTIK_UNENCRYPTED_PLAINTEXT']
+verbose               = true if ENV['MTIK_VERBOSE']
+
+MTik::verbose = verbose
+
+## Detect multiple command sequences and build an array of arrays
+## where each outer array element is a command plus arguments:
+command = Array.new
+i = 3
+while i < ARGV.length
+  if ARGV[i][0,1] == '/'  ## Command detected...
+    command << [ ARGV[i] ]
+  else
+    command[command.length-1] << ARGV[i]
+  end
+  i += 1
+end
+
+args = {
+  :host    => ARGV[0],
+  :user    => ARGV[1],
+  :pass    => ARGV[2],
+  :command => command,
+  :ssl     => use_ssl,
+  :unencrypted_plaintext => unencrypted_plaintext
+}
+
+if pretty
+  puts JSON.pretty_generate(MTik::command(args))
+else
+  print MTik::command(args).to_json + "\n"
+end
+
