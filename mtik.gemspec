@@ -28,6 +28,6 @@ Gem::Specification.new do |spec|
     'lib/mtik/request.rb',
     'lib/mtik/timeouterror.rb'
   ]
-  spec.executables = [ 'tikcli', 'tikcommand', 'tikfetch' ]
+  spec.executables = [ 'tikcli', 'tikcommand', 'tikfetch', 'tikjson' ]
 end
 

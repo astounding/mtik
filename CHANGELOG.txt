@@ -1,3 +1,7 @@
+2020-08-24 (24 AUG 2020)  VERSION 4.1.2
+  * Added tikjson to the executables list in mtik.gemspec
+    (Yes, I totally forgot to do this for 4.1.1. Oops!)
+
 2020-08-24 (24 AUG 2020)  VERSION 4.1.1
   * Version bump to update copyright notices and author's URL
   * Moved the tikjson script to the bin subdirectory and updated
