@@ -62,7 +62,7 @@ class MTik::Connection
     @ssl_sock              = nil
     @requests              = Hash.new
     @use_ssl               = args[:ssl] || MTik::USE_SSL
-    @unencrypted_plaintext = args[:unecrypted_plaintext]
+    @unencrypted_plaintext = args[:unencrypted_plaintext]
     @host                  = args[:host]
     @port                  = args[:port] || (@use_ssl ? MTik::PORT_SSL : MTik::PORT)
     @user                  = args[:user] || MTik::USER
@@ -151,23 +151,20 @@ class MTik::Connection
     return unless @sock.nil?
     ## TODO: Perhaps catch more errors
     begin
-      addr = Socket.getaddrinfo(@host, nil)
+      addr  = Socket.getaddrinfo(@host, nil)
       @sock = Socket.new(Socket.const_get(addr[0][0]), Socket::SOCK_STREAM, 0)
 
       begin
         @sock.connect_nonblock(Socket.pack_sockaddr_in(@port, addr[0][3]))
       rescue Errno::EINPROGRESS
         ready = IO.select([@sock], [@sock], [], @conn_timeout)
-        if ready
-          @sock
-        else
-          raise Errno::ETIMEDOUT
+        raise Errno::ETIMEDOUT unless ready
       end
-    end
 
-    connect_ssl(@sock) if @use_ssl
-
-    rescue Errno::ECONNREFUSED, Errno::ETIMEDOUT, Errno::ENETUNREACH,
+      connect_ssl(@sock) if @use_ssl
+    rescue Errno::ECONNREFUSED,
+           Errno::ETIMEDOUT,
+           Errno::ENETUNREACH,
            Errno::EHOSTUNREACH => e
       @sock = nil
       raise e ## Re-raise the exception
@@ -417,12 +414,16 @@ class MTik::Connection
 
   ## Send the request object over the socket
   def xmit(req)
-    if @ssl_sock
-      @ssl_sock.write(req.request)
-    else
-      @sock.send(req.request, 0)
+    begin
+      if @ssl_sock
+        @ssl_sock.write(req.request)
+      else
+        @sock.send(req.request, 0)
+      end
+    rescue Errno::EPIPE => e
+      @sock = @ssl_sock = nil
+      raise e ## Re-raise the exception
     end
-
     return req
   end
 
