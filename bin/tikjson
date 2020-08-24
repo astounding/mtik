@@ -45,14 +45,15 @@ require 'rubygems'
 require 'mtik'
 require 'json'
 
+
 def usage(msg='')
   STDERR.print(
     (msg.size > 0 ? msg + "\n\n" : '') +
-    "Usage: #{$0} [-s|--ssl] [-u|--unencrypted_plaintext] <host> <user> <pass> <command> [<args>...] [<command> [<args> ...]]\n" +
-    "       --unencrypted_plaintext OR -u  - Use the 6.43+ login API even if NOT\n"      +
-    "                                        using SSL.\n"                               +
+    "Usage: #{$0} [-p|--pretty] [-s|--ssl] [-u|--unencrypted_plaintext] [-v|--verbose] <host> <user> <pass> <command> [<args>...] [<command> [<args> ...]]\n" +
     "       --pretty OR -p                 - Output JSON using JSON.pretty_generate()\n" +
     "       --ssl OR -s                    - Use SSL for the API connection.\n"          +
+    "       --unencrypted_plaintext OR -u  - Use the 6.43+ login API even if NOT\n"      +
+    "                                        using SSL.\n"                               +
     "       --verbose OR -v                - Enable verbose output to STDERR.\n"
   )
   exit(-1)
