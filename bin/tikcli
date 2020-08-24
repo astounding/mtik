@@ -42,13 +42,14 @@ $LOAD_PATH.unshift(File.dirname(__FILE__)+'/../lib')
 require 'rubygems'
 require 'mtik'
 
+
 def usage(msg='')
   STDERR.print(
     (msg.size > 0 ? msg + "\n\n" : '') +
-    "Usage: #{$0} [-s|--ssl] [-u|--unencrypted_plaintext] <host> <user> <pass>\n"  +
+    "Usage: #{$0} [-s|--ssl] [-u|--unencrypted_plaintext] <host> <user> <pass>\n"   +
+    "       --ssl OR -s                    - Use SSL for the API connection.\n"     +
     "       --unencrypted_plaintext OR -u  - Use the 6.43+ login API even if NOT\n" +
-    "                                        using SSL.\n"                          +
-    "       --ssl OR -s                    - Use SSL for the API connection.\n"
+    "                                        using SSL.\n"
   )
   exit(-1)
 end
@@ -73,6 +74,9 @@ usage("Insufficient arguments.") if ARGV.size < 3
 ## Permit setting use_ssl and unencrypted_plaintext via environment variables:
 use_ssl               = true if ENV['MTIK_SSL']
 unencrypted_plaintext = true if ENV['MTIK_UNENCRYPTED_PLAINTEXT']
+
+## NOTE: We IGNORE environment variable MTIK_VERBOSE mode as this script
+##       ALWAYS uses verbose mode.
 
 args = {
   :host => ARGV[0],
