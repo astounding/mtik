@@ -42,12 +42,39 @@ $LOAD_PATH.unshift(File.dirname(__FILE__)+'/../lib')
 require 'rubygems'
 require 'mtik'
 
-unless ARGV.length > 3
-  STDERR.print("Usage: #{$0} <host> <user> <pass> <command> [<args>...] [<command> [<args> ...]]\n")
+def usage(msg='')
+  STDERR.print(
+    (msg.size > 0 ? msg + "\n\n" : '') +
+    "Usage: #{$0} [-s|--ssl] [-u|--unencrypted_plaintext] <host> <user> <pass> <command> [<args>...] [<command> [<args> ...]]\n" +
+    "       --unencrypted_plaintext OR -u  - Use the 6.43+ login API even if NOT\n" +
+    "                                        using SSL.\n"                          +
+    "       --ssl OR -s                    - Use SSL for the API connection.\n"
+  )
   exit(-1)
 end
 
-MTik::verbose = true  ## Set how you want
+MTik::verbose = true  ## Set how verbose you want things
+
+use_ssl = unencrypted_plaintext = false
+while !ARGV[0].nil? && ARGV[0][0] == '-'
+  arg = ARGV.shift
+  case arg
+  when '--ssl', '-s'
+    usage("Please do not repeat the --ssl (or -s) parameter") if use_ssl
+    use_ssl = true
+  when '--unencrypted_plaintext', '-u'
+    usage("Please do not repeat the --unencrypted_plaintext (or -u) parameter") if unencrypted_plaintext
+    unencrypted_plaintext = true
+  else
+    usage("Unknown argument #{arg.inspect}")
+  end
+end
+usage("Too few arguments.") if ARGV.size < 4
+usage("First command must start with a slash '/' character. #{ARGV[3].inspect}") if ARGV[3].nil? || ARGV[3][0] != '/'
+
+## Permit setting use_ssl and unencrypted_plaintext via environment variables:
+use_ssl               = true if ENV['MTIK_SSL']
+unencrypted_plaintext = true if ENV['MTIK_UNENCRYPTED_PLAINTEXT']
 
 ## Detect multiple command sequences and build an array of arrays
 ## where each outer array element is a command plus arguments:
@@ -62,10 +89,14 @@ while i < ARGV.length
   i += 1
 end
 
-p MTik::command(
-  :host=>ARGV[0],
-  :user=>ARGV[1],
-  :pass=>ARGV[2],
-  :command=>command
-)
+args = {
+  :host    => ARGV[0],
+  :user    => ARGV[1],
+  :pass    => ARGV[2],
+  :command => command,
+  :ssl     => use_ssl,
+  :unencrypted_plaintext => unencrypted_plaintext
+}
+
+p MTik::command(args)
 
